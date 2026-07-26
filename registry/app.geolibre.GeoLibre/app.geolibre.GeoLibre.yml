@@ -33,9 +33,9 @@ modules:
         filename: geolibre.deb
         only-arches:
           - x86_64
-        url: https://github.com/opengeos/GeoLibre/releases/download/v2.2.0/GeoLibre.Desktop_2.2.0_amd64.deb
-        sha256: 1814a9bf6709cf231520fa86b91e5bd2679f6199933fc82a76c2bc7f63bc1b16
-        size: 36459758
+        url: https://github.com/opengeos/GeoLibre/releases/download/v2.3.0/GeoLibre.Desktop_2.3.0_amd64.deb
+        sha256: 6477f0e1e52c708f5aaf1b4cb12027c2314ed2729df372287768856d88146c65
+        size: 38067128
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
