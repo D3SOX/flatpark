@@ -5,8 +5,9 @@ set -eu
 # through zypak-wrapper (from org.electronjs.Electron2.BaseApp): zypak redirects
 # Chromium's SUID sandbox onto the Flatpak sandbox, so the app keeps an internal
 # sandbox via zypak's default entrypoint. --ozone-platform-hint=auto lets
-# Chromium use Wayland when available and fall back to X11. Flatpak redirects
-# $HOME, so the note database under ~/.local/share/trilium-data stays sandboxed.
+# Chromium use Wayland when available and fall back to X11. The note database
+# under ~/.local/share/trilium-data is a host directory bind-mounted into the
+# sandbox by the manifest's --filesystem grant; the rest of $HOME is a tmpfs.
 #
 # Defensively clear ELECTRON_RUN_AS_NODE: if it leaks in from the launching
 # environment (e.g. a terminal inside VS Code/Electron), the binary would start

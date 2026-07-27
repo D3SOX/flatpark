@@ -22,7 +22,7 @@
       <li>Scriptable and extensible with a built-in JavaScript API and a note-map / relation-map to visualise connections.</li>
       <li>Strong note encryption to protect sensitive notes on a per-note basis.</li>
     </ul>
-    <p>Permissions: this package keeps a tight sandbox by default — network (for optional server sync), display, GPU and notifications. Importing and exporting notes goes through the desktop portal, so no broad filesystem access is granted; the note database lives inside the sandbox under ~/.var/app/com.triliumnext.notes. To share a note database with a host location, grant filesystem access and set TRILIUM_DATA_DIR via <code>flatpak override</code>.</p>
+    <p>Permissions: this package keeps a tight sandbox by default — network (for optional server sync), display, GPU and notifications. Importing and exporting notes goes through the desktop portal, so the only filesystem access granted is the note database directory itself, ~/.local/share/trilium-data — the same location the upstream .deb and AppImage use, so notes from a native install are picked up and stay in place if you switch back. To keep the database somewhere else, grant access to that location and set TRILIUM_DATA_DIR via <code>flatpak override</code>.</p>
   </description>
   <content_rating type="oars-1.1"/>
   <categories>
