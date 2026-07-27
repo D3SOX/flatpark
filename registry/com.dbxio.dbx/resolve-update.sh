@@ -21,9 +21,22 @@ version="$(jq -r '.tag_name | ltrimstr("v")' <<<"$rel")"
 date="$(jq -r '.published_at' <<<"$rel" | cut -c1-10)"
 # The Linux x86_64 build is the `DBX_<version>_amd64.deb` asset (the arm64 .deb,
 # the .rpm/.AppImage and the macOS/Windows builds are skipped).
+asset="$(jq -r '.assets[] | select(.name | test("_amd64\\.deb$")) | .name' <<<"$rel" | head -n1)"
 url="$(jq -r '.assets[] | select(.name | test("_amd64\\.deb$")) | .browser_download_url' <<<"$rel" | head -n1)"
 
 [ -n "$version" ] && [ -n "$url" ] || { echo "failed to resolve dbx release" >&2; exit 1; }
+
+# Upstream mirrors every release to its own CDN (dl.dbxio.com, Cloudflare-fronted
+# and reachable at full speed from mainland China, unlike GitHub release assets).
+# Same bytes as the GitHub asset; prefer it when the mirror already has this
+# version, and fall back to GitHub when it lags behind a fresh release.
+cdn="https://dl.dbxio.com/releases/v$version/$asset"
+if curl -fsSLI -o /dev/null "$cdn"; then
+  url="$cdn"
+else
+  echo "cdn miss for $cdn, falling back to github" >&2
+fi
+
 echo "resolved dbx $version ($date): $url" >&2
 
 jq -n --arg v "$version" --arg d "$date" --arg u "$url" \
