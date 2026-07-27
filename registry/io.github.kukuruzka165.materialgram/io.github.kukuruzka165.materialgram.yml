@@ -40,9 +40,9 @@ modules:
         filename: materialgram.tar.zst
         only-arches:
           - x86_64
-        url: https://github.com/kukuruzka165/materialgram/releases/download/v6.7.7.1/materialgram-v6.7.7.1.tar.zst
-        sha256: 521088cda0b265fcb14e0a754018c2adbc398e5ee0d010f029c64a8a2dd4fda9
-        size: 86662755
+        url: https://github.com/kukuruzka165/materialgram/releases/download/v7.0.5.1/materialgram-v7.0.5.1.tar.zst
+        sha256: b3437f76bf95529e39f9ea5b077f8828e66e9c21b0bf66f9a7b3860e636b6f24
+        size: 91683896
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
