@@ -65,7 +65,7 @@ modules:
         filename: dbx.deb
         only-arches:
           - x86_64
-        url: https://github.com/t8y2/dbx/releases/download/v0.5.66/DBX_0.5.66_amd64.deb
+        url: https://dl.dbxio.com/releases/v0.5.66/DBX_0.5.66_amd64.deb
         sha256: 2c48c963f9bf88b4a4b504c5d72171c23b98de989beb0c982de610e0e65a3477
         size: 33179452
       # END MANAGED EXTRA-DATA
