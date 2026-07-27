@@ -36,12 +36,19 @@ finish-args:
   # zypak's spawned child/zygote processes, which the wrapper's own `unset`
   # can't reach — always start as the GUI app rather than as plain Node.
   - --unset-env=ELECTRON_RUN_AS_NODE
+  # Trilium resolves its data directory from os.homedir() rather than
+  # XDG_DATA_HOME: when ~/.local/share exists it keeps the note database in
+  # ~/.local/share/trilium-data (apps/server/src/services/data_dir.ts). Under
+  # the default sandbox $HOME is a tmpfs with only granted paths bind-mounted
+  # into it, so that directory has to be granted on the host or the database is
+  # written to the tmpfs and lost when the app exits. `:create` because it does
+  # not exist before the first run. This is the same path the upstream .deb and
+  # AppImage use, so an existing native install's notes carry over.
+  - --filesystem=~/.local/share/trilium-data:create
   # Note import/export (Markdown, HTML, ENEX, attachments) goes through the
-  # desktop portal, so no broad --filesystem grant is needed by default. The
-  # note database lives inside the sandbox under the per-app HOME
-  # (~/.var/app/com.triliumnext.notes). Deliberately NOT granted (users opt in
-  # per the metainfo notes via `flatpak override`):
-  #   --filesystem=home  -> point TRILIUM_DATA_DIR at a shared/host location
+  # desktop portal, so no broader --filesystem grant is needed. Deliberately NOT
+  # granted (users opt in per the metainfo notes via `flatpak override`):
+  #   --filesystem=home  -> point TRILIUM_DATA_DIR at some other host location
 modules:
   - name: trilium
     buildsystem: simple
