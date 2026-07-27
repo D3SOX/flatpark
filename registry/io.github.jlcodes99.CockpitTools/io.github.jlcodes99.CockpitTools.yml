@@ -1,0 +1,77 @@
+id: io.github.jlcodes99.CockpitTools
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: cockpit-tools
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Tauri/WebKitGTK account manager for AI coding assistants and IDEs.
+  # dri for hardware-accelerated WebKit rendering; network for the OAuth flows,
+  # the quota APIs and the bundled local Codex API service.
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # System tray (Tauri tray-icon) — the app can be closed to tray.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+  # tauri-plugin-single-instance claims org.<identifier with . and - replaced by
+  # _>.SingleInstance on the session bus, and the deep-link plugin delivers the
+  # OAuth callback URL (cockpit-tools:, cockpittools:, zcode:) to the running
+  # instance over that name. Without it a second launch cannot hand its URL over.
+  - --own-name=org.com_jlcodes_cockpit_tools.SingleInstance
+  # Core function: read/write the live configs of the tools being managed. The
+  # only default grant is Cockpit's own data directory, which also holds every
+  # managed instance profile (~/.antigravity_cockpit/instances/<client>). Each
+  # managed tool is granted by the user with `flatpak override` — the commands
+  # are in the app description. Grant directories, never a bare config file: the
+  # app replaces configs by write-temp-then-rename, and a single-file
+  # --filesystem grant is a bind mount that rename(2) cannot replace (EBUSY).
+  - --filesystem=~/.antigravity_cockpit:create
+modules:
+  # The Tauri tray-icon dlopen-s libayatana-appindicator3.so.1 and PANICS if it is
+  # missing — the GNOME runtime does not ship it, so the app cannot start without
+  # it (upstream's .deb declares libayatana-appindicator3-1 as a dependency).
+  # Prebuilt ayatana tray stack (libdbusmenu, ayatana-ido, libayatana-indicator,
+  # libayatana-appindicator) from https://github.com/flatpark/prebuilt, built
+  # against org.gnome.Sdk//50; the tag's manifest records the exact sources,
+  # pins and patches.
+  - name: ayatana-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
+        sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
+  - name: cockpit-tools
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 cockpit-tools-wrapper /app/bin/cockpit-tools
+      - install -Dm644 io.github.jlcodes99.CockpitTools.desktop /app/share/applications/io.github.jlcodes99.CockpitTools.desktop
+      - install -Dm644 io.github.jlcodes99.CockpitTools.metainfo.xml /app/share/metainfo/io.github.jlcodes99.CockpitTools.metainfo.xml
+      - install -Dm644 io.github.jlcodes99.CockpitTools.png /app/share/icons/hicolor/256x256/apps/io.github.jlcodes99.CockpitTools.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: cockpit-tools.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/jlcodes99/cockpit-tools/releases/download/v1.3.14/Cockpit.Tools_1.3.14_amd64.deb
+        sha256: b4d1bc19c395342969b3cbbc35f9664b07657044bc9886a546cd318bf5276046
+        size: 40880806
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: cockpit-tools-wrapper
+      - type: file
+        path: io.github.jlcodes99.CockpitTools.desktop
+      - type: file
+        path: io.github.jlcodes99.CockpitTools.metainfo.xml
+      - type: file
+        path: io.github.jlcodes99.CockpitTools.png

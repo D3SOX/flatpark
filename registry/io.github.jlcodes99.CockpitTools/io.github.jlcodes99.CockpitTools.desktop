@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Cockpit Tools
+Comment=Manage and switch accounts for AI coding assistants and IDEs
+Exec=cockpit-tools %u
+Icon=io.github.jlcodes99.CockpitTools
+Terminal=false
+Categories=Development;Utility;
+StartupWMClass=cockpit-tools
+StartupNotify=true
+MimeType=x-scheme-handler/cockpit-tools;x-scheme-handler/cockpittools;x-scheme-handler/zcode;
+Keywords=AI;account;switch;quota;codex;copilot;cursor;antigravity;

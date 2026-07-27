@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.jlcodes99.CockpitTools</id>
+  <name>Cockpit Tools</name>
+  <summary>Manage and switch accounts for AI coding assistants and IDEs</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>CC-BY-NC-SA-4.0</project_license>
+  <developer id="io.github.jlcodes99">
+    <name>jlcodes99</name>
+  </developer>
+  <url type="homepage">https://github.com/jlcodes99/cockpit-tools</url>
+  <url type="bugtracker">https://github.com/jlcodes99/cockpit-tools/issues</url>
+  <url type="vcs-browser">https://github.com/jlcodes99/cockpit-tools</url>
+  <description>
+    <p>This is a community package of Cockpit Tools, maintained independently.</p>
+    <p>Cockpit Tools keeps the accounts you use with AI coding assistants in one place: it stores several accounts per platform, shows each one's plan and remaining quota, and writes the one you pick back into the tool's own live configuration. It also runs a local Codex API service from a bundled sidecar.</p>
+    <p>Note on the plugin WebSocket service: it is enabled on first run and listens on port 19528 on every interface, so other machines on your network can reach it, not just this one. Turn it off or change the port under Settings if you do not use the editor plugins.</p>
+    <p>Supported platforms include Antigravity IDE, Codex, GitHub Copilot, Windsurf, Kiro, Cursor, Grok CLI, CodeBuddy, Qoder, the Trae suite, Zed and ZCode.</p>
+    <p>Licensing: Cockpit Tools is published under CC BY-NC-SA 4.0. Personal, research and other non-commercial use is allowed; commercial use needs a separate written licence from the author.</p>
+    <p>By default this package can access only its own data (~/.antigravity_cockpit, which also holds the profiles of every instance it manages) — the rest of your home stays private. Grant access for the tools you actually use, otherwise the changes Cockpit Tools writes for them are silently discarded by the sandbox:</p>
+    <ul>
+      <li>Codex CLI: flatpak override --user --filesystem=~/.codex:create io.github.jlcodes99.CockpitTools</li>
+      <li>Grok CLI: flatpak override --user --filesystem=~/.grok:create io.github.jlcodes99.CockpitTools</li>
+      <li>Gemini CLI: flatpak override --user --filesystem=~/.gemini:create io.github.jlcodes99.CockpitTools</li>
+      <li>ZCode credentials: flatpak override --user --filesystem=~/.zcode:create io.github.jlcodes99.CockpitTools</li>
+      <li>An editor client, by its own configuration directory name — Cursor: flatpak override --user --filesystem=~/.config/Cursor:create io.github.jlcodes99.CockpitTools; Antigravity IDE: flatpak override --user "--filesystem=~/.config/Antigravity IDE:create" io.github.jlcodes99.CockpitTools; GitHub Copilot in VS Code: flatpak override --user --filesystem=~/.config/Code:create io.github.jlcodes99.CockpitTools. The same pattern covers Windsurf, Kiro, CodeBuddy, CodeBuddy CN, Qoder, Trae, TRAE SOLO, Trae CN, TRAE SOLO CN and ZCode. Kiro additionally keeps its token in ~/.aws/sso.</li>
+    </ul>
+    <p>General rule for any other tool (or a custom configuration directory): if the tool's configuration lives in a directory, grant that directory; if it is a bare file, grant the file's parent directory, never the file itself — Cockpit Tools replaces configurations by writing a temporary file and renaming it over the original, and a single file exposed to the sandbox is a bind mount that rename cannot replace.</p>
+    <p>What this package cannot do, because it runs in a sandbox:</p>
+    <ul>
+      <li>Start, stop or otherwise drive the editors and CLIs themselves. Account switching writes the new credentials, but launching a client, the multi-instance features and "restart after switch" all need to run programs on the host, which the sandbox does not allow. Restart the client yourself after switching, or use upstream's own .deb/.rpm build if you need the launcher features.</li>
+      <li>Switch accounts for a client that encrypts its stored sessions with a key held in the host keyring (VS Code and Windsurf do this for some payloads) — reading that key needs a host helper that is not available here.</li>
+      <li>Install its own updates or register itself for autostart. Updates for this build are delivered by Flatpak; if the in-app update check offers a new version, it cannot install it.</li>
+    </ul>
+    <p>This package also becomes the handler for the zcode: URL scheme, which Cockpit Tools uses to capture the ZCode sign-in callback, as upstream's own builds do.</p>
+    <p>Warning: even after granting other directories, do not remove the default ~/.antigravity_cockpit permission (for example by toggling it off in Flatseal). Removing a directory permission records an explicit deny, and the sandbox masks a denied directory with an empty one, so Cockpit Tools would lose its own accounts on every restart.</p>
+  </description>
+  <launchable type="desktop-id">io.github.jlcodes99.CockpitTools.desktop</launchable>
+  <categories>
+    <category>Development</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>AI</keyword>
+    <keyword>account</keyword>
+    <keyword>quota</keyword>
+    <keyword>codex</keyword>
+    <keyword>copilot</keyword>
+    <keyword>cursor</keyword>
+    <keyword>antigravity</keyword>
+  </keywords>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>cockpit-tools</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Dashboard with per-platform account and quota status</caption>
+      <image>https://raw.githubusercontent.com/jlcodes99/cockpit-tools/main/docs/images/dashboard_overview.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Antigravity IDE account list</caption>
+      <image>https://raw.githubusercontent.com/jlcodes99/cockpit-tools/main/docs/images/antigravity_list.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Codex accounts with plan and quota</caption>
+      <image>https://raw.githubusercontent.com/jlcodes99/cockpit-tools/main/docs/images/codex_list.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Settings</caption>
+      <image>https://raw.githubusercontent.com/jlcodes99/cockpit-tools/main/docs/images/settings_page.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.3.14" date="2026-07-22" />
+  </releases>
+</component>
