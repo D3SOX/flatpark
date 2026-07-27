@@ -1,0 +1,37 @@
+#!/bin/sh
+set -eu
+
+# Cockpit Tools is a Tauri (WebKitGTK) app staged by apply_extra to
+# /app/extra/cockpit-tools, keeping upstream's bin/ + lib/ layout because Tauri
+# derives both the resource directory (<exe dir>/../lib/Cockpit Tools) and the
+# cockpit-cliproxy sidecar path from the executable's own location. It links only
+# against libraries in org.gnome.Platform (webkit2gtk-4.1, gtk-3, libsoup-3) plus
+# libayatana-appindicator, which the tray code dlopen-s and which the manifest
+# builds into /app/lib.
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside the
+# Flatpak sandbox. Disabling it is the reliable default.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+# Where the app looks for the tools it manages: nearly every lookup is built from
+# $HOME (~/.codex, ~/.grok, ~/.config/Cursor, ...), so a per-tool
+# `flatpak override --filesystem=...` grant is enough to make it visible. Two
+# lookups differ — VS Code (GitHub Copilot) and the Antigravity IDE plugin import
+# prefer $XDG_CONFIG_HOME, which Flatpak redirects into the sandbox, so they would
+# miss the host client even after its config directory is granted. Point just
+# those names back at the granted host directories, and only when the grant is
+# actually there: without it $HOME/.config/<name> does not exist and nothing is
+# linked. A real directory the app created for itself is never replaced.
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [ "$config_home" != "$HOME/.config" ]; then
+  mkdir -p "$config_home"
+  for name in 'Antigravity IDE' 'Code' 'Code - Insiders'; do
+    host="$HOME/.config/$name"
+    link="$config_home/$name"
+    if [ -d "$host" ] && { [ -L "$link" ] || [ ! -e "$link" ]; }; then
+      ln -sfn "$host" "$link"
+    fi
+  done
+fi
+
+exec /app/extra/cockpit-tools/bin/cockpit-tools "$@"

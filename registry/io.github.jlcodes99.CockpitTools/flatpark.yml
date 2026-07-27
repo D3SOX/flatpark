@@ -1,0 +1,26 @@
+id: io.github.jlcodes99.CockpitTools
+name: Cockpit Tools
+summary: Manage and switch accounts for AI coding assistants and IDEs
+website: https://github.com/jlcodes99/cockpit-tools
+source_url: https://github.com/jlcodes99/cockpit-tools
+build:
+  manifest: io.github.jlcodes99.CockpitTools.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Development
+  tags:
+    - AI
+    - Codex
+    - Copilot
+    - Cursor
+    - Accounts
+    - Quota
+update:
+  command: ./resolve-update.sh
+policy:
+  # Source-available but not free software: CC BY-NC-SA 4.0 forbids commercial
+  # use without a separate written licence from the author.
+  proprietary: true
+  extra_data_first: true
+  dangerous_permissions: []
