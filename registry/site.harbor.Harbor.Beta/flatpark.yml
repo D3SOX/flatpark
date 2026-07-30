@@ -8,7 +8,7 @@ build:
   branch: beta
   mode: extra-data
 catalog:
-  category: Audio & Video
+  category: AudioVideo
   tags:
     - Media
     - Video
