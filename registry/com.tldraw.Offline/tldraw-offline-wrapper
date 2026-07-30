@@ -14,4 +14,10 @@ set -eu
 # environment (e.g. a terminal inside VS Code/Electron), the binary would start
 # as plain Node instead of the GUI app.
 unset ELECTRON_RUN_AS_NODE
-exec zypak-wrapper /app/extra/tldraw-offline/@tldesktop --ozone-platform-hint=auto "$@"
+
+# apply_extra resolves the launcher's upstream name from the .deb's own .desktop
+# file and records it next to the app tree — upstream renamed it once already
+# (`@tldesktop` -> `tldraw-offline` in v1.12.0), so it is not hardcoded here.
+launcher="$(cat /app/extra/launcher 2>/dev/null || true)"
+[ -n "$launcher" ] || launcher=tldraw-offline
+exec zypak-wrapper "/app/extra/tldraw-offline/$launcher" --ozone-platform-hint=auto "$@"

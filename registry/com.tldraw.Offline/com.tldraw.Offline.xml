@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Mirrors the shared-mime-info definition upstream ships in the .deb
-     (usr/share/mime/packages/@tldesktop.xml), merged into one <mime-type> so
-     both globs live under the single application/x-tldraw type. It is shipped
+     (under usr/share/mime/packages/), merged into one <mime-type> so both
+     globs live under the single application/x-tldraw type. It is shipped
      here at build time because Flatpak exports share/mime/packages from the
      build, not from extra-data fetched later on the user's machine. -->
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">

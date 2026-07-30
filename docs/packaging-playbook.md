@@ -131,6 +131,13 @@ Detail + schema in the [contributing guide](https://flatpark.org/contributing/).
     justify it, and expect human review; it is otherwise an auto-reject.
   - **Bundled JRE** (JavaFX/Java apps) → [`registry/net.huangyuhui.hmcl`](../registry/net.huangyuhui.hmcl).
   - Version-stamped top dir → rename to a stable path in `apply_extra`.
+  - **Don't hardcode a name the payload owns.** Pin refreshes are automated, so any
+    name upstream can change between releases — above all the launcher binary — must be
+    read out of the artifact rather than written into the unpack script or the wrapper.
+    A `.deb`'s own `.desktop` `Exec=` is the authoritative answer for Electron builds.
+    `com.tldraw.Offline` learned this the hard way: v1.12.0 renamed the launcher and the
+    refreshed pin shipped an app nobody could install
+    ([#130](https://github.com/flatpark/flatpark/issues/130)).
 - **Descriptor set** under `registry/<app-id>/`: `flatpark.yml`, `<id>.yml`, `<id>.metainfo.xml`,
   `<id>.desktop`, `<id>.png`, `apply_extra.sh`, `<app>-wrapper`, `resolve-update.sh`.
 - **Permissions:** tightest `finish-args` that work. Don't pre-grant broad host access;
@@ -154,8 +161,11 @@ Detail + schema in the [contributing guide](https://flatpark.org/contributing/).
 4. `scripts/check-apply-extra.sh <id>` — runs `apply_extra` as **root with every capability
    dropped**, which is what a *system-wide* install does and what step 3 never reaches (a
    custom installation runs it as you). It downloads the pinned artifact, checks its sha256,
-   and unpacks it in that sandbox. `pr-checks` runs this for apps a PR **adds**; run it
-   yourself whenever you touch an unpack script or re-pin to an artifact from a new builder.
+   and unpacks it in that sandbox. CI runs it wherever a payload is new to the unpack
+   script: `pr-checks` for any PR whose `sha256` moved, and the two update workflows
+   before they pin a fresh upstream artifact (`INSTALL_RUNTIME=1` lets those fetch the
+   runtime without building first). A held-back pin in an auto-update PR means this
+   check failed — the app keeps its last installable version until the script is fixed.
 5. **Smoke-test the actual launch:** the app must start, and its data must land inside the
    sandbox (`~/.var/app/<id>/…`). Confirm no missing libs (`LD_TRACE_LOADED_OBJECTS=1` → 0
    "not found"). Note in the PR anything you *couldn't* verify (GUI render on a real session,
