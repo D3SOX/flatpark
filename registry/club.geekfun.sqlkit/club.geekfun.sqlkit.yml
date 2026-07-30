@@ -46,9 +46,9 @@ modules:
         filename: sqlkit.deb
         only-arches:
           - x86_64
-        url: https://github.com/geek-fun/sqlkit/releases/download/v0.8.1/SqlKit_0.8.1_amd64.deb
-        sha256: b4a1dabadbd2f9e31ddf14ffff67fd8120359873f1f7b58593d4fb545d3febc8
-        size: 23073644
+        url: https://github.com/geek-fun/sqlkit/releases/download/v0.8.2/SqlKit_0.8.2_amd64.deb
+        sha256: 81108aa4e46e6b99e67461cd102e453d1c01e96bd967a4e699e7db687d1e708f
+        size: 23073062
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
