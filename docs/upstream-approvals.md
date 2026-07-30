@@ -32,6 +32,7 @@ that PR link in the table — the PR itself is the evidence.
 | AeroFTP | `com.aeroftp.AeroFTP` | Maintainer co-maintains the package: [flatpark#98](https://github.com/flatpark/flatpark/pull/98) and [axpdev-lab/aeroftp#388](https://github.com/axpdev-lab/aeroftp/issues/388) — "I took the recipe on from our side to co-maintain it" | 2026-07-10 |
 | DBX | `com.dbxio.dbx` | [t8y2/dbx#3225](https://github.com/t8y2/dbx/issues/3225) — maintainer replied "感谢 辛苦提个pr吧～" to the FlatPark listing + docs offer | 2026-07-12 |
 | Zuko | `dev.adonm.zuko` | Approved by construction — submitted and maintained by its own developer ([flatpark#117](https://github.com/flatpark/flatpark/pull/117)) | 2026-07-13 |
+| LibreDB Studio | `org.libredb.Studio` | Approved by construction — submitted and maintained by its own developer ([flatpark#158](https://github.com/flatpark/flatpark/pull/158)) | 2026-07-30 |
 
 ## Not approved
 
