@@ -1,0 +1,22 @@
+id: site.harbor.Harbor.Beta
+name: Harbor Beta
+summary: Beta channel of a Stremio client built for adventure
+website: https://harbor.site/
+source_url: https://github.com/harborstremio-linux/harbor-linux-builds
+build:
+  manifest: site.harbor.Harbor.Beta.yml
+  branch: beta
+  mode: extra-data
+catalog:
+  category: Audio & Video
+  tags:
+    - Media
+    - Video
+    - Stremio
+    - Beta
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
