@@ -44,6 +44,25 @@ jobs:
         run: |
           echo "upstream release: ${UPSTREAM:-?} ${TAG:-?} -> $APP_ID"
           ./scripts/check-updates.sh "$APP_ID"
+          # Nothing moved on the common re-ping / not-yet-uploaded path, so the
+          # steps below skip instead of re-downloading the current payload.
+          git diff --quiet -- registry/ || echo "pins_changed=1" >> "$GITHUB_ENV"
+      # A PR opened with the default GITHUB_TOKEN does not trigger pr-checks, so
+      # this is the only place the freshly pinned artifact gets opened at all.
+      # Unpack it the way an install does rather than pinning a payload nobody
+      # has looked inside — an upstream that repackages behind an unchanged asset
+      # name otherwise reaches users as `apply_extra script failed` (issue #130).
+      - name: Install flatpak
+        if: env.pins_changed != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak bubblewrap
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      - name: Verify the new payload unpacks
+        if: env.pins_changed != ''
+        env:
+          APP_ID: ${{ github.event.client_payload.app_id }}
+        run: INSTALL_RUNTIME=1 ./scripts/check-apply-extra.sh "$APP_ID"
       - name: Open / update PR if pins changed
         env:
           GH_TOKEN: ${{ github.token }}

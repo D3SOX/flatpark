@@ -150,16 +150,28 @@ jobs:
           ids="$(./scripts/changed-apps.sh "$base" HEAD | tr '\n' ' ')"
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
           echo "changed apps: ${ids:-<none>}"
-          # Apps this PR introduces: nothing existed under registry/<id>/ at base.
-          # The apply_extra check downloads the full pinned artifact (hundreds of
-          # MB for some apps), so it is scoped to new submissions — the moment a
-          # never-before-installed unpack script first meets review.
-          new_ids=""
+          # Apps where an unpack script meets a tree it has not been run against:
+          # a new submission, a pin bump to an artifact no apply_extra has ever
+          # unpacked (both show up as a changed `sha256:` line), or an edit to
+          # apply_extra.sh itself. A version bump is not a safe change: v1.12.0 of
+          # com.tldraw.Offline renamed the launcher inside its .deb, the automated
+          # pin refresh shipped it, and users got `apply_extra script failed, exit
+          # status 256` on update (issue #130). The check downloads the full
+          # artifact (hundreds of MB for some apps), so it stays scoped to those
+          # two signals — a wrapper or descriptor edit does not pull it in.
+          # No grep -q: with pipefail, grep closing the pipe on its first match
+          # can fail the pipeline on SIGPIPE even though it matched.
+          payload_ids=""
           for id in $ids; do
-            git cat-file -e "$base:registry/$id" 2>/dev/null || new_ids="$new_ids $id"
+            app_diff="$(git diff -U0 --name-only "$base" HEAD -- "registry/$id/apply_extra.sh")"
+            pin_diff="$(git diff -U0 "$base" HEAD -- "registry/$id/" \
+                          | grep -E '^[+-][[:space:]]*sha256:' || true)"
+            if [ -n "$pin_diff" ] || [ -n "$app_diff" ]; then
+              payload_ids="$payload_ids $id"
+            fi
           done
-          echo "new_ids=${new_ids# }" >> "$GITHUB_OUTPUT"
-          echo "new apps: ${new_ids:-<none>}"
+          echo "payload_ids=${payload_ids# }" >> "$GITHUB_OUTPUT"
+          echo "apps needing an apply_extra run: ${payload_ids:-<none>}"
       - uses: actions/setup-node@v6
         if: steps.changed.outputs.ids != ''
         with:
@@ -186,10 +198,12 @@ jobs:
       # app can be *installed*. extra-data is fetched on the user's machine and
       # unpacked by apply_extra, which a system-wide install runs as root with
       # --cap-drop ALL — a path neither the build nor a --user install exercises.
+      # This is also the only check that looks inside the pinned artifact, so it
+      # is what catches an upstream repackaging behind an unchanged asset name.
       # Runs after the build so the runtime is already installed.
-      - name: Check apply_extra under a system-wide install (new apps only)
-        if: steps.changed.outputs.new_ids != ''
-        run: ./scripts/check-apply-extra.sh ${{ steps.changed.outputs.new_ids }}
+      - name: Check apply_extra against the pinned payload
+        if: steps.changed.outputs.payload_ids != ''
+        run: ./scripts/check-apply-extra.sh ${{ steps.changed.outputs.payload_ids }}
       - name: Bundle changed apps into installable .flatpak files
         if: steps.changed.outputs.ids != ''
         run: |

@@ -33,6 +33,40 @@ jobs:
           ids="$(./scripts/check-updates.sh | tr '\n' ' ')"
           echo "changed=$ids" >> "$GITHUB_ENV"
           echo "changed apps: ${ids:-<none>}"
+      # A PR opened with the default GITHUB_TOKEN does not trigger pr-checks, so
+      # nothing downstream of this job looks inside the artifact it just pinned.
+      # That is how a repackaged upstream reaches users: com.tldraw.Offline v1.12.0
+      # renamed the launcher inside its .deb, the pin refresh sailed through, and
+      # every install failed with `apply_extra script failed, exit status 256`
+      # (issue #130). Unpack each new payload here, the way an install does, and
+      # hold back the pins that no longer unpack instead of shipping them.
+      - name: Install flatpak
+        if: env.changed != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak bubblewrap
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      - name: Verify the new payloads unpack
+        if: env.changed != ''
+        run: |
+          held=""
+          kept=""
+          for id in $changed; do
+            echo "::group::apply_extra $id"
+            if INSTALL_RUNTIME=1 ./scripts/check-apply-extra.sh "$id"; then
+              kept="$kept $id"
+            else
+              echo "::warning title=apply_extra failed for $id::holding back this pin; the new upstream artifact does not unpack"
+              # Drop this app's recomputed pin, keeping it on the last version
+              # known to install. check-updates.sh only touches the working tree.
+              git checkout -- "registry/$id/"
+              held="$held $id"
+            fi
+            echo "::endgroup::"
+          done
+          echo "changed=${kept# }" >> "$GITHUB_ENV"
+          echo "held=${held# }" >> "$GITHUB_ENV"
+          echo "held back: ${held:-<none>}"
       - name: Open / update PR if pins changed
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,7 +87,11 @@ jobs:
           apps_md="$(for id in ${changed:-}; do printf -- '- `%s`\n' "$id"; done)"
           [ -n "$apps_md" ] || apps_md='- (see diff)'
           title="Update extra-data pins ($date)"
-          body="$(printf 'Automated extra-data pin refresh — %s\n\n**Updated apps:**\n\n%s\n\nMerging triggers a rebuild + publish of the changed app(s).' "$date" "$apps_md")"
+          body="$(printf 'Automated extra-data pin refresh — %s\n\n**Updated apps:**\n\n%s\n\nEach payload was unpacked with the app'"'"'s `apply_extra.sh` before being pinned here.\n\nMerging triggers a rebuild + publish of the changed app(s).' "$date" "$apps_md")"
+          if [ -n "${held:-}" ]; then
+            held_md="$(for id in $held; do printf -- '- `%s`\n' "$id"; done)"
+            body="$(printf '%s\n\n**Held back — the new upstream artifact does not unpack:**\n\n%s\n\nThese keep their current pin. Their `apply_extra.sh` needs a look before the update can ship.' "$body" "$held_md")"
+          fi
 
           # Create today's PR, or refresh it if this branch already opened one earlier today
           if [ -z "$(gh pr list --head "$branch" --state open --json number -q '.[].number')" ]; then
@@ -72,3 +110,10 @@ jobs:
             echo "superseding older auto-update PR #$n"
             gh pr close "$n" --comment "Superseded by #$new ($date pin refresh)." --delete-branch || true
           done
+      # Last, so a held-back app still gets its PR opened for the apps that passed.
+      # A red daily run is the point: an upstream that repackaged needs a human.
+      - name: Fail if any pin was held back
+        if: env.held != ''
+        run: |
+          echo "held back — apply_extra failed against the new payload:$held" >&2
+          exit 1

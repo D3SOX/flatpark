@@ -99,10 +99,20 @@ check_one() {
         return 0
     fi
 
-    # The runtime must already be installed; apply_extra runs against its /usr.
+    # apply_extra runs against the runtime's /usr, so the runtime must be present.
+    # A dev box already has it from building the app; INSTALL_RUNTIME=1 lets a
+    # workflow that only checks payloads (update-check.yml) fetch it instead of
+    # having to build anything first, from $RUNTIME_REMOTE (default flathub).
     local loc files
-    loc="$(flatpak info --show-location "$runtime//$runtime_version" 2>/dev/null)" \
-        || die "$APP_ID: runtime not installed: $runtime//$runtime_version"
+    loc="$(flatpak info --show-location "$runtime//$runtime_version" 2>/dev/null)" || loc=""
+    if [ -z "$loc" ] && [ -n "${INSTALL_RUNTIME:-}" ]; then
+        log "$APP_ID: installing runtime $runtime//$runtime_version"
+        flatpak install --user -y --noninteractive "${RUNTIME_REMOTE:-flathub}" \
+            "runtime/$runtime/$arch/$runtime_version" \
+            || die "$APP_ID: cannot install runtime: $runtime//$runtime_version"
+        loc="$(flatpak info --show-location "$runtime//$runtime_version" 2>/dev/null)" || loc=""
+    fi
+    [ -n "$loc" ] || die "$APP_ID: runtime not installed: $runtime//$runtime_version (set INSTALL_RUNTIME=1 to fetch it)"
     files="$loc/files"
     [ -d "$files" ] || die "$APP_ID: runtime has no files dir: $files"
 
