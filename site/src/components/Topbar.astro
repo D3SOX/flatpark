@@ -3,13 +3,31 @@ const { repo } = Astro.props;
 ---
 
 <header class="sticky top-0 z-20 border-b border-line bg-surface/85 backdrop-blur">
-  <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
+  <!--
+    Under 480px the search drops to its own full-width row. On one line it is
+    the only child that may shrink, so it absorbs the whole squeeze: the
+    controls cost 184px plus 64px of gaps plus 40px of padding, which leaves the
+    input 34px at a 320px viewport - less than its own 32px of horizontal
+    padding, so nothing you type is visible.
+
+    480px rather than the sm breakpoint on purpose: at 480 the single row still
+    gives the input ~143px of text area, which is usable, and wrapping earlier
+    than necessary would cost 52px of sticky header height on screens that do
+    not need it. At and above 480px this header is unchanged.
+  -->
+  <div
+    class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-3 px-5 py-3 min-[480px]:h-16 min-[480px]:flex-nowrap min-[480px]:py-0"
+  >
     <a href="/" class="flex shrink-0 items-center gap-2 font-extrabold tracking-tight">
       <img src="/logo.svg" alt="" width="32" height="32" class="h-8 w-8" />
       <span class="hidden sm:inline">{repo.title}</span>
     </a>
 
-    <form class="mx-auto w-full max-w-md" action="/" role="search">
+    <form
+      class="order-last w-full basis-full min-[480px]:order-none min-[480px]:mx-auto min-[480px]:max-w-md min-[480px]:basis-auto"
+      action="/"
+      role="search"
+    >
       <input
         class="h-10 w-full rounded-full border border-line bg-canvas px-4 text-sm outline-none focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/20"
         type="search"
