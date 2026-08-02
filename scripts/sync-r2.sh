@@ -3,13 +3,17 @@
 #
 # Ordering matters: content-addressed objects go up FIRST (and are cached
 # forever), the mutable `summary` pointer goes up LAST, so a client never reads
-# a summary that references objects not yet uploaded. With RECLAIM_LIST set, the
-# orphaned objects listed there are deleted AFTER the new summary is live (see
-# prune-and-reclaim.sh).
+# a summary that references objects not yet uploaded. With RECLAIM_REFS /
+# RECLAIM_LIST set, the stale ref files and the orphaned objects listed there
+# are deleted AFTER the new summary is live — refs before the objects they name
+# (see prune-and-reclaim.sh and drop-dangling-refs.sh).
+#
+# The uploads are additive on purpose (copy, not sync), so deletions only ever
+# happen through those two explicit lists — never as a mirror side effect.
 #
 # rclone must have an R2 (S3) remote configured; in CI that is done with
 # RCLONE_CONFIG_<REMOTE>_* env vars. Required: R2_BUCKET. Optional: R2_REMOTE
-# (default r2), RECLAIM_LIST.
+# (default r2), RECLAIM_LIST, RECLAIM_REFS.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 . "$ROOT/scripts/lib/common.sh"
 load_config "$ROOT"
@@ -43,6 +47,17 @@ rclone copy "$repo" "$dest" --max-depth 1 --checksum --header-upload "$MUTABLE" 
     --include "summary" --include "summary.sig"
 rclone copy "$repo" "$dest" --max-depth 1 --checksum --header-upload "$MUTABLE" "${FLAGS[@]}" \
     --include "summary.idx"
+
+if [ -n "${RECLAIM_REFS:-}" ] && [ -s "$RECLAIM_REFS" ]; then
+    n="$(wc -l < "$RECLAIM_REFS" | tr -d ' ')"
+    log "reclaim: deleting $n stale ref file(s) from $dest"
+    # Before the objects below: a ref file R2 still serves must never outlive
+    # the commit it points at, or the next publish pulls a dangling ref back.
+    while IFS= read -r ref; do
+        [ -n "$ref" ] || continue
+        rclone deletefile "$dest/$ref" 2>/dev/null || warn "could not delete $ref (already gone?)"
+    done < "$RECLAIM_REFS"
+fi
 
 if [ -n "${RECLAIM_LIST:-}" ] && [ -s "$RECLAIM_LIST" ]; then
     n="$(wc -l < "$RECLAIM_LIST")"

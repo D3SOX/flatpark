@@ -37,6 +37,36 @@ load_config() {
     declare -g "_FLATPARK_PUBKEY_FILE_DEFAULT=$_FLATPARK_PUBKEY_FILE_DEFAULT"
 }
 
+# The registry id an OSTree ref belongs to, or nothing for refs that are not
+# per-app: appstream*, ostree-metadata, and runtimes we did not export from an
+# app. Used to decide whether a ref is still backed by registry/<id>/.
+ref_registry_id() {
+    local ref="$1" id
+    case "$ref" in
+        app/*)
+            id="${ref#app/}"; id="${id%%/*}"
+            ;;
+        runtime/*)
+            id="${ref#runtime/}"; id="${id%%/*}"
+            case "$id" in
+                *.Debug)   id="${id%.Debug}" ;;
+                *.Locale)  id="${id%.Locale}" ;;
+                *.Sources) id="${id%.Sources}" ;;
+                *) return 0 ;;
+            esac
+            ;;
+        *) return 0 ;;
+    esac
+    printf '%s\n' "$id"
+}
+
+# True when the ref belongs to an app that is no longer in the registry.
+ref_is_delisted() {
+    local id
+    id="$(ref_registry_id "$1")"
+    [ -n "$id" ] && [ ! -f "$REGISTRY_DIR/$id/flatpark.yml" ]
+}
+
 app_record_path() {
     local app_id="$1"
     printf '%s/%s/flatpark.yml\n' "$REGISTRY_DIR" "$app_id"

@@ -54,17 +54,25 @@ jobs:
         run: |
           mkdir -p "$REPO_DIR"
           rclone copy "r2:$R2_BUCKET" "$REPO_DIR" --fast-list
+      # First: refs whose commit is already gone (a de-list from an earlier run
+      # whose ref file lingered in R2). They would break the prune below, and
+      # the sweep truncates the reclaim-refs list the prune then appends to.
+      - name: Drop dangling refs
+        run: RECLAIM_REFS="$OUT_DIR/reclaim-refs.txt" ./scripts/drop-dangling-refs.sh
       - name: Delist + prune to current commit
         run: |
           export RECLAIM_LIST="$OUT_DIR/reclaim-objects.txt"
+          export RECLAIM_REFS="$OUT_DIR/reclaim-refs.txt"
           ./scripts/prune-and-reclaim.sh
       - name: Re-sign + rebuild discovery and site
         run: |
           ./scripts/publish-repo.sh
           while IFS= read -r id; do ./scripts/gen-discovery.sh "$id"; done < <(./scripts/scan-registry.sh --ids)
           ./scripts/gen-site.sh $(./scripts/scan-registry.sh --ids | tr '\n' ' ')
-      - name: Sync new summary first, then delete orphaned objects
-        run: RECLAIM_LIST="$OUT_DIR/reclaim-objects.txt" ./scripts/sync-r2.sh
+      - name: Sync new summary first, then delete stale refs and orphaned objects
+        run: |
+          RECLAIM_LIST="$OUT_DIR/reclaim-objects.txt" \
+          RECLAIM_REFS="$OUT_DIR/reclaim-refs.txt" ./scripts/sync-r2.sh
       - name: Redeploy site
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

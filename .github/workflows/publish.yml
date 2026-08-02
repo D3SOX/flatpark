@@ -102,6 +102,15 @@ jobs:
           rclone sync "r2:$R2_BUCKET/objects" "$REPO_DIR/objects" --size-only --fast-list
           rclone sync "r2:$R2_BUCKET" "$REPO_DIR" --exclude "objects/**" --checksum --fast-list
 
+      # The refs upload is additive (rclone copy), so a ref delist-prune removed
+      # only locally survives in R2 and the sync above pulls it back — dangling,
+      # because prune already reclaimed its objects. Every summary regeneration
+      # then hard-fails ("No such metadata object <commit>.commit"), wedging all
+      # later publishes, not just the one after the de-list. Drop those refs here
+      # and queue the same keys for a targeted delete in the R2 sync below.
+      - name: Drop dangling refs left by a de-list
+        run: RECLAIM_REFS="$OUT_DIR/reclaim-refs.txt" ./scripts/drop-dangling-refs.sh
+
       - name: Decide which apps to build
         id: apps
         env:
@@ -159,7 +168,7 @@ jobs:
         run: ./scripts/gen-site.sh $(./scripts/scan-registry.sh --ids | tr '\n' ' ')
 
       - name: Sync repo to R2 (objects first, summary last)
-        run: ./scripts/sync-r2.sh
+        run: RECLAIM_REFS="$OUT_DIR/reclaim-refs.txt" ./scripts/sync-r2.sh
 
       - name: Deploy site to Cloudflare Pages (atomic)
         env:
