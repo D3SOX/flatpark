@@ -46,6 +46,7 @@
     <binary>zennotes</binary>
   </provides>
   <releases>
+    <release version="2.21.0" date="2026-08-03" />
     <release version="2.20.2" date="2026-08-01" />
     <release version="2.19.0" date="2026-07-27" />
     <release version="2.18.0" date="2026-07-24" />
