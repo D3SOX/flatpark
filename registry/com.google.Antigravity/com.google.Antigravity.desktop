@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Antigravity
+Comment=Command center for managing local AI agents
+GenericName=AI Agent Manager
+Keywords=AI;Agent;Agents;Agentic;Antigravity;
+Exec=antigravity %U
+Icon=com.google.Antigravity
+Type=Application
+Terminal=false
+StartupNotify=true
+StartupWMClass=Antigravity
+Categories=Development;
+MimeType=inode/directory;x-scheme-handler/antigravity;

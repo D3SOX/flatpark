@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+# Antigravity is an Electron app staged by apply_extra to /app/extra/antigravity.
+# Run it through zypak-wrapper (from org.electronjs.Electron2.BaseApp): zypak
+# redirects Chromium's SUID sandbox onto the Flatpak sandbox.
+# --ozone-platform-hint=auto lets Chromium use Wayland when available and fall back to X11.
+
+unset ELECTRON_RUN_AS_NODE
+exec zypak-wrapper /app/extra/antigravity/antigravity --ozone-platform-hint=auto "$@"
