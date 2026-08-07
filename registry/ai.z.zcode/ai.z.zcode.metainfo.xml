@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ai.z.zcode</id>
+  <name>ZCode</name>
+  <summary>Agentic coding desktop app for GLM models</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://zcode.z.ai</project_license>
+  <developer id="ai.z">
+    <name>Z.ai</name>
+  </developer>
+  <url type="homepage">https://zcode.z.ai</url>
+  <url type="download">https://zcode.z.ai/en#all-downloads</url>
+  <description>
+    <p>This is a community package of ZCode, maintained independently and unaffiliated with Z.ai. It repackages the official upstream Linux Debian build unmodified.</p>
+    <p>ZCode is a desktop coding agent built around Z.ai's GLM models. It plans and carries out multi-step development work in a project you point it at, with an editor, terminal panes and diff review in one window. Upstream lists the Linux build as beta.</p>
+    <ul>
+      <li>Run long-horizon coding tasks with plan, edit and review steps.</li>
+      <li>Search a codebase with the bundled ripgrep, ugrep and bfs helpers.</li>
+      <li>Work in built-in terminal panes alongside the agent.</li>
+    </ul>
+    <p>An account with Z.ai is required for the agent features; the app itself is free to install.</p>
+    <p>Permissions: this package grants network, display, GPU, audio, notifications and keyring access. It does not grant broad home-directory access — pick a project through the file-chooser portal and ZCode can work in it, while ZCode's own state stays under the sandboxed home.</p>
+    <p>The agent shells out to developer tools that no Flatpak runtime ships. This package puts a bridge on the app's PATH that forwards those commands to the same tools on your host, so your existing Git, Node and language toolchains — and the credentials you have already authorized there — are what run. FlatPark does not bundle or authenticate any of them.</p>
+    <p>Because host commands run against real host paths, a project opened through the portal is visible to the app but not at the same path on the host. To let the two line up, grant access to where your projects live:</p>
+    <ul>
+      <li>Open host projects at their real paths: <code>flatpak override --user --filesystem=home ai.z.zcode</code></li>
+      <li>Or scope it to one directory: <code>flatpak override --user --filesystem=~/Projects ai.z.zcode</code></li>
+      <li>Reuse your host SSH keys for Git remotes: <code>flatpak override --user --filesystem=~/.ssh:ro ai.z.zcode</code></li>
+    </ul>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Development</category>
+    <category>IDE</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>agent</keyword>
+    <keyword>coding</keyword>
+    <keyword>developer</keyword>
+    <keyword>glm</keyword>
+    <keyword>zcode</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#1b1b1f</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">1024</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>zcode</binary>
+    <mediatype>x-scheme-handler/zcode</mediatype>
+  </provides>
+  <launchable type="desktop-id">ai.z.zcode.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://zcode.z.ai/images/summary_large_image.png</image>
+      <caption>ZCode, the desktop coding agent from Z.ai</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="3.6.5" date="2026-07-31">
+      <url>https://zcode.z.ai/en#all-downloads</url>
+    </release>
+  </releases>
+</component>

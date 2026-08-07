@@ -1,0 +1,86 @@
+id: ai.z.zcode
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox, so ZCode keeps Chromium's
+# internal sandbox instead of launching with --no-sandbox. The base is a
+# prebuilt ref merged in at build time; the official upstream application tree
+# is fetched as extra-data and left unmodified.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: zcode
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Electron coding agent with an editor, terminal panes and a bundled agent
+  # CLI. The prebuilt app bundles Chromium, its Node native modules (node-pty,
+  # ssh2) and its own ripgrep/ugrep/bfs search helpers; the GTK3, NSS, ATK,
+  # CUPS, DRM/GBM and X11 stacks come from org.freedesktop.Platform 25.08.
+  - --share=ipc
+  # Model API calls, sign-in and plugin/model catalog fetches.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Chromium compositing for the editor and diff views.
+  - --device=dri
+  # ZCode plays a completion sound when a long-running agent task finishes.
+  - --socket=pulseaudio
+  # Desktop notifications for finished agent runs and approval prompts.
+  - --talk-name=org.freedesktop.Notifications
+  # Electron safeStorage for the stored API key / session when a keyring exists.
+  - --talk-name=org.freedesktop.secrets
+  # Host command bridge: the wrapper generates a runtime PATH directory whose
+  # entries forward through flatpak-spawn --host, so the agent's shell tools
+  # resolve to the user's own git, Node/npm and language toolchains, which is
+  # where their projects and credentials already live. The runtime ships bash
+  # and coreutils but no developer toolchain, and FlatPark neither bundles nor
+  # authenticates those CLIs. This is deliberately declared in flatpark.yml
+  # policy.dangerous_permissions and requires human review.
+  - --talk-name=org.freedesktop.Flatpak
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the GUI — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # cannot reach — never start as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # Deliberately NOT granted by default (documented as opt-in in the metainfo):
+  #   --filesystem=home        -> open existing host projects at their real paths
+  #   --filesystem=~/.ssh:ro   -> reuse host SSH keys for git remotes
+  #   --device=all             -> broad local device access
+  # Projects picked through the file-chooser portal are reachable without any
+  # of these; ZCode's own state stays under the redirected HOME.
+modules:
+  - name: zcode
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 zcode-wrapper /app/bin/zcode
+      - install -Dm755 zcode-host-shim /app/lib/zcode/zcode-host-shim
+      - install -Dm755 zcode-setup-host-bin /app/lib/zcode/zcode-setup-host-bin
+      - install -Dm644 ai.z.zcode.desktop /app/share/applications/ai.z.zcode.desktop
+      - install -Dm644 ai.z.zcode.metainfo.xml /app/share/metainfo/ai.z.zcode.metainfo.xml
+      - install -Dm644 ai.z.zcode.png /app/share/icons/hicolor/512x512/apps/ai.z.zcode.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: zcode-amd64.deb
+        only-arches:
+          - x86_64
+        url: https://cdn-zcode.z.ai/zcode/electron/releases/3.6.5/linux-x64/ZCode-3.6.5-linux-x64.deb
+        sha256: e49803cd8c46cdc0b2ed61e27addfd1fa7cc172ff1ee1b7aeb2a8eb5d8453204
+        size: 138049804
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: zcode-wrapper
+      - type: file
+        path: zcode-host-shim
+      - type: file
+        path: zcode-setup-host-bin
+      - type: file
+        path: ai.z.zcode.desktop
+      - type: file
+        path: ai.z.zcode.metainfo.xml
+      - type: file
+        path: ai.z.zcode.png

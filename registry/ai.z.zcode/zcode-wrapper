@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+# ZCode is an Electron app staged by apply_extra to /app/extra/ZCode. Run it
+# through zypak-wrapper from org.electronjs.Electron2.BaseApp so Chromium keeps
+# its internal sandbox inside Flatpak. A generated host-bin directory is
+# appended to PATH so the developer tools ZCode's agent shells out to — git,
+# node/npm, language toolchains — resolve to the user's own host installs,
+# which is where their projects and credentials already are.
+
+unset ELECTRON_RUN_AS_NODE
+
+extra_root=/app/extra
+launcher_file="$extra_root/zcode-launcher"
+launcher="zcode"
+if [ -r "$launcher_file" ]; then
+  read -r recorded < "$launcher_file" || recorded=""
+  [ -n "$recorded" ] && launcher="$recorded"
+fi
+
+host_bin="$(/app/lib/zcode/zcode-setup-host-bin || true)"
+if [ -n "$host_bin" ] && [ -d "$host_bin" ]; then
+  export PATH="/app/bin:$PATH:$host_bin"
+else
+  export PATH="/app/bin:$PATH"
+fi
+
+# Launch by absolute path and leave the working directory alone: it is
+# inherited by the commands ZCode spawns, and a working directory that exists
+# only inside the sandbox (such as the app tree) cannot be entered by anything
+# forwarded to the host.
+exec zypak-wrapper "$extra_root/ZCode/$launcher" --ozone-platform-hint=auto "$@"

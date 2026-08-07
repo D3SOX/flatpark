@@ -1,0 +1,24 @@
+id: ai.z.zcode
+name: ZCode
+summary: Agentic coding desktop app for GLM models
+website: https://zcode.z.ai
+source_url: https://zcode.z.ai/en#all-downloads
+build:
+  manifest: ai.z.zcode.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Development
+  tags:
+    - AI
+    - Agents
+    - Coding
+    - Terminal
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: true
+  extra_data_first: true
+  dangerous_permissions:
+    - --talk-name=org.freedesktop.Flatpak
