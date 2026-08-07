@@ -1,0 +1,20 @@
+id: com.google.Antigravity
+name: Antigravity
+summary: Command center for managing local AI agents
+website: https://antigravity.google
+build:
+  manifest: com.google.Antigravity.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Development
+  tags:
+    - Development
+    - AI
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: true
+  extra_data_first: true
+  dangerous_permissions:
+    - --filesystem=home

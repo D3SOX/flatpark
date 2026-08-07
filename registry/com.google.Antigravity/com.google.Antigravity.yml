@@ -1,0 +1,49 @@
+id: com.google.Antigravity
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: antigravity
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  - --filesystem=home
+modules:
+  - name: antigravity
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 antigravity-wrapper /app/bin/antigravity
+      - install -Dm644 com.google.Antigravity.desktop /app/share/applications/com.google.Antigravity.desktop
+      - install -Dm644 com.google.Antigravity.metainfo.xml /app/share/metainfo/com.google.Antigravity.metainfo.xml
+      - install -Dm644 com.google.Antigravity.png /app/share/icons/hicolor/512x512/apps/com.google.Antigravity.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: Antigravity.tar.gz
+        only-arches:
+          - x86_64
+        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.6.0-4603467860410368/linux-x64/Antigravity.tar.gz
+        sha256: cb98aff00dbad4e718b7fb2d95fef531b7dd30f985531e6c844b42aaf67df431
+        size: 168520716
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: antigravity-wrapper
+      - type: file
+        path: com.google.Antigravity.desktop
+      - type: file
+        path: com.google.Antigravity.metainfo.xml
+      - type: file
+        path: com.google.Antigravity.png
