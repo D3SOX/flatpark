@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=ZCode
+Comment=Agentic coding desktop app for GLM models
+GenericName=AI Coding Agent
+Keywords=AI;Agent;Coding;Developer;GLM;ZCode;
+Exec=zcode %U
+Icon=ai.z.zcode
+Type=Application
+Terminal=false
+StartupNotify=true
+StartupWMClass=ZCode
+Categories=Development;IDE;
+MimeType=x-scheme-handler/zcode;
