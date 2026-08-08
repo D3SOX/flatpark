@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+# DeepChat is an Electron app staged by apply_extra to /app/extra/deepchat.
+# Run it through zypak-wrapper (from org.electronjs.Electron2.BaseApp): zypak
+# redirects Chromium's SUID sandbox onto the Flatpak sandbox, so the app keeps
+# an internal sandbox. --ozone-platform-hint=auto lets Chromium use Wayland
+# when available and fall back to X11.
+#
+# deepchat.bin is the Chromium binary; the tarball's own `deepchat` shell script
+# is a one-liner that launches the same binary with a different sandbox setting
+# for a plain unpack-and-run install. Under Flatpak the sandbox comes from zypak
+# instead, so the binary is exec'd directly here.
+#
+# Flatpak redirects the XDG base directories, so conversations, provider
+# settings and MCP configuration stay inside the sandbox.
+#
+# Defensively clear ELECTRON_RUN_AS_NODE: if it leaks in from the launching
+# environment (e.g. a terminal inside VS Code/Electron), the binary would start
+# as plain Node instead of the GUI app.
+unset ELECTRON_RUN_AS_NODE
+exec zypak-wrapper /app/extra/deepchat/deepchat.bin --ozone-platform-hint=auto "$@"

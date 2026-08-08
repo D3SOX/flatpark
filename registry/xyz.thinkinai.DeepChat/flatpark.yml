@@ -1,0 +1,23 @@
+id: xyz.thinkinai.DeepChat
+name: DeepChat
+summary: Local-first AI client with MCP, skills and agents
+website: https://deepchat.thinkinai.xyz/
+source_url: https://github.com/ThinkInAIXYZ/deepchat
+build:
+  manifest: xyz.thinkinai.DeepChat.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Agents
+    - MCP
+    - Chat
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []

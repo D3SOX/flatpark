@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=DeepChat
+Comment=Local-first AI client with MCP, skills and agents
+Exec=deepchat %U
+Icon=xyz.thinkinai.DeepChat
+Terminal=false
+Categories=Development;
+StartupWMClass=DeepChat
+Keywords=ai;chat;llm;mcp;agent;assistant;
