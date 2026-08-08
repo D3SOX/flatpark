@@ -104,6 +104,23 @@ async function cacheScreenshots(id, shots) {
 const toArray = (x) => (x == null ? [] : Array.isArray(x) ? x : [x]);
 const textOf = (x) => (x == null ? '' : typeof x === 'object' ? String(x['#text'] ?? '') : String(x)).trim();
 
+// AppStream carries translations inline: an element tagged with `xml:lang` is a
+// translation of its untagged sibling. FlatPark renders app content in the
+// source language, so every walk below has to take the untagged element and
+// skip the translations. Left unfiltered they do not merely leak, they corrupt:
+// translated <p> blocks get concatenated onto the English prose as though they
+// were more of it, and a field upstream shipped once per language arrives as an
+// array, which textOf renders as the empty string — silently dropping it.
+//
+// The two parsers put attributes in different places: the ordered walk keeps
+// them on the wrapper's ':@' node, the flat one inlines them with the '@_'
+// prefix. langOf reads either.
+const langOf = (node) =>
+  node && typeof node === 'object' ? (node[':@']?.['@_xml:lang'] ?? node['@_xml:lang'] ?? null) : null;
+const isSourceLang = (node) => langOf(node) == null;
+/** textOf for a field upstream may have shipped once per language. */
+const sourceText = (x) => textOf(toArray(x).find(isSourceLang) ?? '');
+
 const xml = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', trimValues: true });
 // A second parser that preserves child order, so an AppStream <description>'s
 // <p> and <ul>/<ol> blocks keep the order they appear in the document.
@@ -178,6 +195,7 @@ function blocksFrom(descChildren) {
   const blocks = [];
   for (const node of toArray(descChildren)) {
     if (!node || typeof node !== 'object') continue;
+    if (!isSourceLang(node)) continue; // a translated <p>/<ul> of a sibling
     if ('p' in node) {
       const runs = orderedRuns(node.p);
       if (runs.length) blocks.push({ type: 'p', runs });
@@ -205,9 +223,13 @@ const componentChildren = (rawXml) => {
   return comp ? toArray(comp.component) : [];
 };
 
-// The component-level <description>, i.e. the About prose.
+// The component-level <description>, i.e. the About prose. Upstream may tag the
+// whole element rather than its paragraphs, so pick the untagged <description>
+// rather than the first one — document order does not guarantee English first.
 function descriptionBlocks(rawXml) {
-  const descNode = componentChildren(rawXml).find((n) => n && 'description' in n);
+  const descNode = componentChildren(rawXml)
+    .filter((n) => n && 'description' in n)
+    .find(isSourceLang);
   return descNode ? blocksFrom(descNode.description) : [];
 }
 
@@ -224,7 +246,7 @@ function releaseExtras(rawXml) {
     if (!version || version in out) continue;
     const kids = toArray(rel.release);
     const urlNode = kids.find((n) => n && 'url' in n);
-    const descNode = kids.find((n) => n && 'description' in n);
+    const descNode = kids.filter((n) => n && 'description' in n).find(isSourceLang);
     out[version] = {
       url: urlNode ? orderedText(urlNode.url) : '',
       notes: descNode ? blocksFrom(descNode.description) : [],
@@ -384,7 +406,7 @@ async function enrichOne(file) {
       out.screenshots = toArray(comp.screenshots?.screenshot).map((s) => {
         const imgs = toArray(s.image);
         const img = imgs.find((i) => (typeof i === 'object' ? i['@_type'] : 'source') === 'source') || imgs[0];
-        return { url: textOf(img), caption: textOf(s.caption) };
+        return { url: textOf(img), caption: sourceText(s.caption) };
       }).filter((s) => s.url);
       // Notes are upstream's own words when they bothered to supply them; `url`
       // links out to their release page. Either, both or neither may be there.
@@ -399,7 +421,7 @@ async function enrichOne(file) {
           notes: extra.notes || [],
         };
       }).filter((r) => r.version);
-      out.developer = textOf(comp.developer?.name) || textOf(comp.developer_name) || '';
+      out.developer = sourceText(comp.developer?.name) || sourceText(comp.developer_name) || '';
       const lic = parseLicense(textOf(comp.project_license));
       if (lic) out.license = lic;
       for (const u of toArray(comp.url)) {

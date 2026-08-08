@@ -32,7 +32,7 @@ cat > "$app/io.flatpark.TestOne.metainfo.xml" <<'EOF'
   <name>Test One</name>
   <summary>First test app</summary>
   <project_license>MIT</project_license>
-  <developer id="io.flatpark"><name>FlatPark Test Dev</name></developer>
+  <developer id="io.flatpark"><name>FlatPark Test Dev</name><name xml:lang="zh-Hans">FlatPark 测试开发者</name></developer>
   <url type="homepage">https://example.org/</url>
   <description>
     <p>A test application for FlatPark.</p>
@@ -43,8 +43,17 @@ cat > "$app/io.flatpark.TestOne.metainfo.xml" <<'EOF'
       <li>Optional cap: <code>flatpak override --user --filesystem=home io.flatpark.TestOne</code></li>
     </ul>
   </description>
-  <screenshots><screenshot type="default"><caption>Main</caption><image>https://example.org/shot.png</image></screenshot></screenshots>
-  <releases><release version="1.0" date="2026-01-01" /></releases>
+  <description xml:lang="zh-Hans">
+    <p>一个用于 FlatPark 的测试应用。</p>
+    <ul><li>特性 alpha</li></ul>
+  </description>
+  <screenshots><screenshot type="default"><caption>Main</caption><caption xml:lang="zh-Hans">主界面</caption><image>https://example.org/shot.png</image></screenshot></screenshots>
+  <releases>
+    <release version="1.0" date="2026-01-01">
+      <description><p>First release.</p></description>
+      <description xml:lang="zh-Hans"><p>首个版本。</p></description>
+    </release>
+  </releases>
 </component>
 EOF
 # A single flatpark.yml carries both the registry fields (id/name/summary/build)
@@ -89,6 +98,16 @@ assert_contains "$out" "\"text\": \"Optional cap: \""
 assert_contains "$out" "\"version\": \"1.0\""
 assert_contains "$out" "\"label\": \"MIT\""
 assert_contains "$out" "https://example.org/shot.png"
+# AppStream ships translations inline as xml:lang siblings. FlatPark renders
+# app content in the source language, so every one of them must be absent: a
+# leaked translated <p> concatenates onto the English prose, and a translated
+# <name> or <caption> makes the field an array, which renders as empty.
+assert_contains "$out" "\"caption\": \"Main\""
+assert_contains "$out" "First release."
+if grep -q "测试开发者\|一个用于\|特性 alpha\|主界面\|首个版本" "$out"; then
+    echo "FAIL: xml:lang translation leaked into source-language content"
+    exit 1
+fi
 # flatpark.yml-derived maintainer
 assert_contains "$out" "\"github\": \"testuser\""
 # enrichment must strip the private source-path fields
