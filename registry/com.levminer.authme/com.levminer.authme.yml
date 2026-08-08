@@ -1,0 +1,57 @@
+id: com.levminer.authme
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: authme
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Authme is a local TOTP authenticator; its core feature needs no network.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # System tray (Tauri tray-icon).
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+modules:
+  # Prebuilt ayatana tray stack from https://github.com/flatpark/prebuilt,
+  # built against org.gnome.Sdk//50. It supplies the tray libraries used by
+  # Authme without changing the upstream application binary.
+  - name: ayatana-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
+        sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
+  - name: authme
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 authme-wrapper /app/bin/authme
+      - install -Dm644 com.levminer.authme.desktop /app/share/applications/com.levminer.authme.desktop
+      - install -Dm644 com.levminer.authme.metainfo.xml /app/share/metainfo/com.levminer.authme.metainfo.xml
+      - install -Dm644 com.levminer.authme.png /app/share/icons/hicolor/256x256/apps/com.levminer.authme.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: authme.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/Levminer/authme/releases/download/7.1.1/authme-7.1.1-linux-x64.deb
+        sha256: 8ae36b8ced36fbf470ecef9acd0e458fdee0c1ea13c3ab00708092743eb31018
+        size: 4659086
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: authme-wrapper
+      - type: file
+        path: com.levminer.authme.desktop
+      - type: file
+        path: com.levminer.authme.metainfo.xml
+      - type: file
+        path: com.levminer.authme.png

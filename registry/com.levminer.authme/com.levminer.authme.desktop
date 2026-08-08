@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Authme
+Comment=Desktop two-factor authentication (TOTP) client
+Exec=authme
+Icon=com.levminer.authme
+Terminal=false
+Categories=Utility;Security;
+StartupNotify=true

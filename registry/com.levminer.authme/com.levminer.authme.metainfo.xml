@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.levminer.authme</id>
+  <name>Authme</name>
+  <summary>Desktop two-factor authentication (TOTP) client</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <developer id="com.levminer">
+    <name>Levminer</name>
+  </developer>
+  <url type="homepage">https://authme.levminer.com</url>
+  <url type="bugtracker">https://github.com/Levminer/authme/issues</url>
+  <url type="vcs-browser">https://github.com/Levminer/authme</url>
+  <description>
+    <p>This is a community package of Authme. It repackages the official upstream build unmodified.</p>
+    <p>Authme is a desktop two-factor authentication client for generating time-based one-time passwords (TOTP). Your secrets remain on the local device.</p>
+    <ul>
+      <li>Store and manage TOTP entries locally</li>
+      <li>Generate rotating six-digit verification codes</li>
+      <li>Import accounts by entering a secret or scanning a QR code</li>
+    </ul>
+    <p>The core authenticator runs without network access. Camera access is optional for QR-code importing; grant it with <code>flatpak override --user --device=all com.levminer.authme</code> when needed.</p>
+  </description>
+  <launchable type="desktop-id">com.levminer.authme.desktop</launchable>
+  <categories>
+    <category>Security</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>2FA</keyword>
+    <keyword>TOTP</keyword>
+    <keyword>OTP</keyword>
+    <keyword>authenticator</keyword>
+    <keyword>security</keyword>
+  </keywords>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>authme</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Authme displaying TOTP codes</caption>
+      <image>https://raw.githubusercontent.com/Levminer/authme/dev/screenshots/codes.png?raw=true</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="7.1.1" date="2026-07-07" />
+  </releases>
+</component>
