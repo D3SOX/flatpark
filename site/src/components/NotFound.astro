@@ -1,0 +1,38 @@
+---
+// The 404 body lives in a component rather than in the route because the host
+// keys off the *file name*: Cloudflare Pages serves the nearest `404.html`
+// walking up from the requested path. A route under `[...locale]/` would emit
+// `/zh-Hans/404/index.html`, which Pages never looks for — so each locale needs
+// a real `404.astro` file at its own path, and they share this body.
+import Base from '../layouts/Base.astro';
+import Topbar from './Topbar.astro';
+import { getLangFromUrl, localizePath, useTranslations } from '../i18n';
+import { loadCatalog } from '../lib/data.mjs';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { repo } = loadCatalog();
+---
+
+<Base title={`${t('notfound.title')} — ${repo.title}`} description={t('notfound.meta')}>
+  <Topbar repo={repo} />
+  <main class="mx-auto max-w-6xl px-5 py-24 text-center">
+    <p class="text-7xl font-extrabold tracking-tight text-brand">404</p>
+    <h1 class="mt-4 text-2xl font-extrabold tracking-tight">{t('notfound.title')}</h1>
+    <p class="mx-auto mt-3 max-w-md text-muted">{t('notfound.body')}</p>
+    <div class="mt-8 flex justify-center gap-3">
+      <a
+        href={localizePath('/apps/', lang)}
+        class="inline-flex h-11 items-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
+      >
+        {t('notfound.browse')}
+      </a>
+      <a
+        href={localizePath('/', lang)}
+        class="inline-flex h-11 items-center rounded-full border border-line px-6 text-sm font-semibold hover:bg-canvas"
+      >
+        {t('notfound.home')}
+      </a>
+    </div>
+  </main>
+</Base>

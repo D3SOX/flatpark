@@ -13,20 +13,25 @@ import sharp from 'sharp';
 // Curated top-level sections. Raw AppStream/descriptor categories map into this
 // fixed set so the catalog filter stays small no matter how many raw categories
 // appear; anything unmapped falls back to Utilities.
+// Values are stable slugs, not display text: the section is baked into the JSON
+// at build time but rendered in the reader's language, so it has to survive as
+// an identifier the site can look up (`section.<slug>`) rather than a string
+// that is already English. The client-side category filter matches on this slug
+// too, which keeps filtering locale-independent.
 const SECTION_MAP = {
-  Development: 'Development', IDE: 'Development', Building: 'Development',
-  Finance: 'Finance',
-  Network: 'Communication', Communication: 'Communication', Chat: 'Communication',
-  InstantMessaging: 'Communication', Email: 'Communication',
-  Science: 'Science', Education: 'Science', Geoscience: 'Science',
-  Office: 'Office', Spreadsheet: 'Office',
-  Graphics: 'Graphics & Design', Photography: 'Graphics & Design',
-  AudioVideo: 'Audio & Video', Audio: 'Audio & Video', Video: 'Audio & Video', Player: 'Audio & Video',
-  Game: 'Games',
-  System: 'System', Settings: 'System', Security: 'System',
-  Utility: 'Utilities', Utilities: 'Utilities',
+  Development: 'development', IDE: 'development', Building: 'development',
+  Finance: 'finance',
+  Network: 'communication', Communication: 'communication', Chat: 'communication',
+  InstantMessaging: 'communication', Email: 'communication',
+  Science: 'science', Education: 'science', Geoscience: 'science',
+  Office: 'office', Spreadsheet: 'office',
+  Graphics: 'graphics', Photography: 'graphics',
+  AudioVideo: 'audio-video', Audio: 'audio-video', Video: 'audio-video', Player: 'audio-video',
+  Game: 'games',
+  System: 'system', Settings: 'system', Security: 'system',
+  Utility: 'utilities', Utilities: 'utilities',
 };
-const sectionFor = (cat) => SECTION_MAP[cat] || 'Utilities';
+const sectionFor = (cat) => SECTION_MAP[cat] || 'utilities';
 
 // Last time we touched this app's package, for the "Recently updated" sort.
 // Git commit time of the registry dir is universal (no upstream fetch); fall
@@ -104,6 +109,23 @@ async function cacheScreenshots(id, shots) {
 const toArray = (x) => (x == null ? [] : Array.isArray(x) ? x : [x]);
 const textOf = (x) => (x == null ? '' : typeof x === 'object' ? String(x['#text'] ?? '') : String(x)).trim();
 
+// AppStream carries translations inline: an element tagged with `xml:lang` is a
+// translation of its untagged sibling. FlatPark renders app content in the
+// source language, so every walk below has to take the untagged element and
+// skip the translations. Left unfiltered they do not merely leak, they corrupt:
+// translated <p> blocks get concatenated onto the English prose as though they
+// were more of it, and a field upstream shipped once per language arrives as an
+// array, which textOf renders as the empty string — silently dropping it.
+//
+// The two parsers put attributes in different places: the ordered walk keeps
+// them on the wrapper's ':@' node, the flat one inlines them with the '@_'
+// prefix. langOf reads either.
+const langOf = (node) =>
+  node && typeof node === 'object' ? (node[':@']?.['@_xml:lang'] ?? node['@_xml:lang'] ?? null) : null;
+const isSourceLang = (node) => langOf(node) == null;
+/** textOf for a field upstream may have shipped once per language. */
+const sourceText = (x) => textOf(toArray(x).find(isSourceLang) ?? '');
+
 const xml = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', trimValues: true });
 // A second parser that preserves child order, so an AppStream <description>'s
 // <p> and <ul>/<ol> blocks keep the order they appear in the document.
@@ -178,6 +200,7 @@ function blocksFrom(descChildren) {
   const blocks = [];
   for (const node of toArray(descChildren)) {
     if (!node || typeof node !== 'object') continue;
+    if (!isSourceLang(node)) continue; // a translated <p>/<ul> of a sibling
     if ('p' in node) {
       const runs = orderedRuns(node.p);
       if (runs.length) blocks.push({ type: 'p', runs });
@@ -205,9 +228,13 @@ const componentChildren = (rawXml) => {
   return comp ? toArray(comp.component) : [];
 };
 
-// The component-level <description>, i.e. the About prose.
+// The component-level <description>, i.e. the About prose. Upstream may tag the
+// whole element rather than its paragraphs, so pick the untagged <description>
+// rather than the first one — document order does not guarantee English first.
 function descriptionBlocks(rawXml) {
-  const descNode = componentChildren(rawXml).find((n) => n && 'description' in n);
+  const descNode = componentChildren(rawXml)
+    .filter((n) => n && 'description' in n)
+    .find(isSourceLang);
   return descNode ? blocksFrom(descNode.description) : [];
 }
 
@@ -224,7 +251,7 @@ function releaseExtras(rawXml) {
     if (!version || version in out) continue;
     const kids = toArray(rel.release);
     const urlNode = kids.find((n) => n && 'url' in n);
-    const descNode = kids.find((n) => n && 'description' in n);
+    const descNode = kids.filter((n) => n && 'description' in n).find(isSourceLang);
     out[version] = {
       url: urlNode ? orderedText(urlNode.url) : '',
       notes: descNode ? blocksFrom(descNode.description) : [],
@@ -271,64 +298,74 @@ function describePermission(arg) {
   const value = eq === -1 ? '' : arg.slice(eq + 1);
   // These are build/metadata directives, not sandbox holes — don't list them.
   if (NON_PERMISSION_FLAGS.has(flag)) return null;
-  const base = (label, level, group, detail) => ({ flag, value, label, level, group, detail: detail || '' });
+  // `key` is what the site translates (`perm.<key>`, and `perm.<key>.detail`
+  // where there is one); `label`/`detail` are the English rendering, kept in the
+  // JSON so anything reading it directly still gets prose and so a locale
+  // missing the key degrades to English rather than to a raw key. `value` is
+  // already emitted, which is what fills the `{value}` placeholder in the
+  // open-ended ones.
+  const base = (key, label, level, group, detail) => ({
+    flag, value, key, label, level, group, detail: detail || '',
+  });
 
   switch (flag) {
     case 'share':
-      if (value === 'network') return base('Network access', 'caution', 'Network', 'Can reach the internet and local network');
-      if (value === 'ipc') return base('Inter-process communication', 'info', 'System', 'Shares the IPC namespace with the host');
-      return base(`Share: ${value}`, 'info', 'System');
+      if (value === 'network') return base('share.network', 'Network access', 'caution', 'Network', 'Can reach the internet and local network');
+      if (value === 'ipc') return base('share.ipc', 'Inter-process communication', 'info', 'System', 'Shares the IPC namespace with the host');
+      return base('share.other', `Share: ${value}`, 'info', 'System');
     case 'socket': {
       const map = {
-        x11: ['X11 windowing system', 'caution', 'Display', 'Legacy display protocol; can observe input to other X11 windows'],
-        'fallback-x11': ['X11 (fallback)', 'info', 'Display'],
-        wayland: ['Wayland display', 'safe', 'Display'],
-        pulseaudio: ['Audio (PulseAudio)', 'info', 'Devices'],
-        pipewire: ['Audio/video (PipeWire)', 'info', 'Devices'],
-        'session-bus': ['Full session bus access', 'warning', 'Services'],
-        'system-bus': ['Full system bus access', 'warning', 'Services'],
-        'ssh-auth': ['SSH agent', 'info', 'System'],
-        cups: ['Printing (CUPS)', 'info', 'System'],
-        'gpg-agent': ['GPG agent', 'info', 'System'],
+        x11: ['socket.x11', 'X11 windowing system', 'caution', 'Display', 'Legacy display protocol; can observe input to other X11 windows'],
+        'fallback-x11': ['socket.fallback_x11', 'X11 (fallback)', 'info', 'Display'],
+        wayland: ['socket.wayland', 'Wayland display', 'safe', 'Display'],
+        pulseaudio: ['socket.pulseaudio', 'Audio (PulseAudio)', 'info', 'Devices'],
+        pipewire: ['socket.pipewire', 'Audio/video (PipeWire)', 'info', 'Devices'],
+        'session-bus': ['socket.session_bus', 'Full session bus access', 'warning', 'Services'],
+        'system-bus': ['socket.system_bus', 'Full system bus access', 'warning', 'Services'],
+        'ssh-auth': ['socket.ssh_auth', 'SSH agent', 'info', 'System'],
+        cups: ['socket.cups', 'Printing (CUPS)', 'info', 'System'],
+        'gpg-agent': ['socket.gpg_agent', 'GPG agent', 'info', 'System'],
       };
       const m = map[value];
-      return m ? base(m[0], m[1], m[2], m[3]) : base(`Socket: ${value}`, 'info', 'System');
+      return m ? base(m[0], m[1], m[2], m[3], m[4]) : base('socket.other', `Socket: ${value}`, 'info', 'System');
     }
     case 'device': {
       const map = {
-        dri: ['GPU acceleration', 'safe', 'Devices'],
-        all: ['All devices (incl. cameras, USB)', 'warning', 'Devices'],
-        kvm: ['Virtualization (KVM)', 'caution', 'Devices'],
-        shm: ['Shared memory', 'info', 'Devices'],
-        input: ['Input devices', 'caution', 'Devices'],
-        usb: ['USB devices', 'caution', 'Devices'],
+        dri: ['device.dri', 'GPU acceleration', 'safe', 'Devices'],
+        all: ['device.all', 'All devices (incl. cameras, USB)', 'warning', 'Devices'],
+        kvm: ['device.kvm', 'Virtualization (KVM)', 'caution', 'Devices'],
+        shm: ['device.shm', 'Shared memory', 'info', 'Devices'],
+        input: ['device.input', 'Input devices', 'caution', 'Devices'],
+        usb: ['device.usb', 'USB devices', 'caution', 'Devices'],
       };
       const m = map[value];
-      return m ? base(m[0], m[1], m[2]) : base(`Device: ${value}`, 'info', 'Devices');
+      return m ? base(m[0], m[1], m[2], m[3]) : base('device.other', `Device: ${value}`, 'info', 'Devices');
     }
     case 'filesystem': {
       const v = value.replace(/:(ro|rw|create)$/, '');
-      const mode = value.endsWith(':ro') ? ' (read-only)' : '';
+      const readOnly = value.endsWith(':ro');
       const map = {
-        host: ['All system files', 'warning', 'Filesystem'],
-        'host-os': ['Host OS files', 'warning', 'Filesystem'],
-        'host-etc': ['Host /etc', 'warning', 'Filesystem'],
-        home: ['Home folder', 'caution', 'Filesystem'],
+        host: ['filesystem.host', 'All system files', 'warning', 'Filesystem'],
+        'host-os': ['filesystem.host_os', 'Host OS files', 'warning', 'Filesystem'],
+        'host-etc': ['filesystem.host_etc', 'Host /etc', 'warning', 'Filesystem'],
+        home: ['filesystem.home', 'Home folder', 'caution', 'Filesystem'],
       };
       const m = map[v];
-      if (m) return base(m[0] + mode, m[1], m[2]);
-      return base(`Files: ${value}`, 'caution', 'Filesystem');
+      // The read-only qualifier is a flag rather than part of the label: the
+      // site wraps the translated label with it, since word order differs.
+      if (m) return { ...base(m[0], m[1] + (readOnly ? ' (read-only)' : ''), m[2], m[3]), readOnly };
+      return base('filesystem.other', `Files: ${value}`, 'caution', 'Filesystem');
     }
     case 'talk-name':
-      return base(`Talk to ${value}`, 'info', 'Services');
+      return base('talk_name', `Talk to ${value}`, 'info', 'Services');
     case 'system-talk-name':
-      return base(`System service: ${value}`, 'caution', 'Services');
+      return base('system_talk_name', `System service: ${value}`, 'caution', 'Services');
     case 'own-name':
-      return base(`Owns service ${value}`, 'info', 'Services');
+      return base('own_name', `Owns service ${value}`, 'info', 'Services');
     case 'persist':
-      return base(`Persistent storage: ${value}`, 'info', 'Filesystem');
+      return base('persist', `Persistent storage: ${value}`, 'info', 'Filesystem');
     default:
-      return base(value ? `${flag}: ${value}` : flag, 'info', 'System');
+      return base(value ? 'other.valued' : 'other', value ? `${flag}: ${value}` : flag, 'info', 'System');
   }
 }
 
@@ -384,7 +421,7 @@ async function enrichOne(file) {
       out.screenshots = toArray(comp.screenshots?.screenshot).map((s) => {
         const imgs = toArray(s.image);
         const img = imgs.find((i) => (typeof i === 'object' ? i['@_type'] : 'source') === 'source') || imgs[0];
-        return { url: textOf(img), caption: textOf(s.caption) };
+        return { url: textOf(img), caption: sourceText(s.caption) };
       }).filter((s) => s.url);
       // Notes are upstream's own words when they bothered to supply them; `url`
       // links out to their release page. Either, both or neither may be there.
@@ -399,7 +436,7 @@ async function enrichOne(file) {
           notes: extra.notes || [],
         };
       }).filter((r) => r.version);
-      out.developer = textOf(comp.developer?.name) || textOf(comp.developer_name) || '';
+      out.developer = sourceText(comp.developer?.name) || sourceText(comp.developer_name) || '';
       const lic = parseLicense(textOf(comp.project_license));
       if (lic) out.license = lic;
       for (const u of toArray(comp.url)) {
