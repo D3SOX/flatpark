@@ -1,0 +1,24 @@
+id: io.github.l1xnan.duckling
+name: Duckling
+summary: Fast viewer for CSV/Parquet files and SQL databases
+website: https://l1xnan.github.io/duckling/
+source_url: https://github.com/l1xnan/duckling
+build:
+  manifest: io.github.l1xnan.duckling.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Development
+  tags:
+    - Database
+    - CSV
+    - Parquet
+    - DuckDB
+    - SQLite
+    - SQL
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+# Duckling is a single Tauri/WebKitGTK binary staged by apply_extra at
+# /app/extra/duckling. Its linked libraries are supplied by org.gnome.Platform;
+# the pinned Ayatana stack in /app supplies libayatana-appindicator for the
+# Tauri system tray.
+
+# Use WebKitGTK's non-DMABUF rendering path for reliable rendering in Flatpak.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+exec /app/extra/duckling "$@"
