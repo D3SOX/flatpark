@@ -1,0 +1,60 @@
+id: io.github.onekeepass.desktop
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: onekeepass
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # OneKeePass is a Tauri (Rust core + ClojureScript UI, WebKitGTK) password
+  # manager for KeePass .kdbx vaults. dri for hardware-accelerated WebKit
+  # rendering; ipc/wayland/fallback-x11 for the window.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # No --share=network: the vault is a local file and the app needs no network
+  # for its core function.
+  #
+  # Documents only by default - the smallest grant that lets the app open a
+  # vault. Vaults kept elsewhere (a sync folder, an external drive) are opt-in
+  # via `flatpak override`; the commands are in the AppStream description.
+  #
+  # Always grant the DIRECTORY holding the vault, never the .kdbx file itself.
+  # A single-file --filesystem grant becomes a bind mount inside the sandbox,
+  # and a password manager saves by writing a temporary file and renaming it
+  # over the original - rename(2) cannot replace a mount point and fails with
+  # EBUSY, so a file-level grant breaks saving.
+  - --filesystem=xdg-documents
+  # No tray: the binary carries no StatusNotifier/appindicator dependency, so
+  # neither the ayatana-stack module nor xdg-run/tray-icon is needed here.
+modules:
+  - name: onekeepass
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 onekeepass-wrapper /app/bin/onekeepass
+      - install -Dm644 io.github.onekeepass.desktop.desktop /app/share/applications/io.github.onekeepass.desktop.desktop
+      - install -Dm644 io.github.onekeepass.desktop.metainfo.xml /app/share/metainfo/io.github.onekeepass.desktop.metainfo.xml
+      - install -Dm644 io.github.onekeepass.desktop.png /app/share/icons/hicolor/256x256/apps/io.github.onekeepass.desktop.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: onekeepass.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/OneKeePass/desktop/releases/download/v0.25.0/OneKeePass_0.25.0_Linux_x86_64.deb
+        sha256: ff73c4965ec194d42e5c7b314fc328ed4c16360274156f948edbc82d2990a18f
+        size: 20960768
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: onekeepass-wrapper
+      - type: file
+        path: io.github.onekeepass.desktop.desktop
+      - type: file
+        path: io.github.onekeepass.desktop.metainfo.xml
+      - type: file
+        path: io.github.onekeepass.desktop.png
