@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.hrzlgnm.mdns-browser</id>
+  <name>mDNS Browser</name>
+  <summary>Cross-platform mDNS/DNS-SD service discovery browser for the local network</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.hrzlgnm">
+    <name>hrzlgnm</name>
+  </developer>
+  <url type="homepage">https://github.com/hrzlgnm/mdns-browser</url>
+  <url type="bugtracker">https://github.com/hrzlgnm/mdns-browser/issues</url>
+  <url type="vcs-browser">https://github.com/hrzlgnm/mdns-browser</url>
+  <description>
+    <p>This is a community package of mDNS Browser, maintained independently and unaffiliated with the upstream project. It repackages the official upstream Linux build unmodified.</p>
+    <p>mDNS Browser is a cross-platform desktop app that enumerates services advertised on the local network using mDNS / DNS-SD (the same multicast protocol behind Bonjour and Avahi). Built with Tauri (Rust + leptos/thaw over WebKitGTK) on the mdns-sd library, it lists the service types being broadcast and resolves the instances, hostnames, ports and TXT records underneath each one.</p>
+    <ul>
+      <li>Browse all service types (_ssh._tcp, _http._tcp, _ipp._tcp, …) announced on the LAN.</li>
+      <li>Drill into a type to see its instances with addresses, ports and TXT records.</li>
+      <li>Rescan on demand and watch services appear and disappear in real time.</li>
+    </ul>
+    <p>Permissions: the sandbox shares the host network namespace (--share=network) because that is the app's whole purpose — mDNS service discovery is multicast UDP on 224.0.0.251:5353, which can only reach the host network. Beyond that the package is deliberately narrow: it has no filesystem access at all, since the app only reads the network and never touches your files, and there is no tray icon. The app keeps its own settings under the per-app data directory, which Flatpak redirects into ~/.var/app/io.github.hrzlgnm.mdns-browser. Nothing else needs opting into via <code>flatpak override</code>.</p>
+  </description>
+  <content_rating type="oars-1.1" />
+  <categories>
+    <category>Network</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>mDNS</keyword>
+    <keyword>DNS-SD</keyword>
+    <keyword>Bonjour</keyword>
+    <keyword>Zeroconf</keyword>
+    <keyword>service discovery</keyword>
+  </keywords>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>mdns-browser</binary>
+  </provides>
+  <launchable type="desktop-id">io.github.hrzlgnm.mdns-browser.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Browsing advertised service types on the LAN</caption>
+      <image>https://raw.githubusercontent.com/hrzlgnm/mdns-browser/main/docs/assets/screenshots/intro.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Browsing a service type such as _ssh._tcp</caption>
+      <image>https://raw.githubusercontent.com/hrzlgnm/mdns-browser/main/docs/assets/screenshots/browsing-_ssh._tcp.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Instance details: address, port and TXT records</caption>
+      <image>https://raw.githubusercontent.com/hrzlgnm/mdns-browser/main/docs/assets/screenshots/_ssh._tcp.details.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.15.0" date="2026-08-08" />
+    <release version="1.14.1" date="2026-08-06" />
+    <release version="1.14.0" date="2026-08-05" />
+    <release version="1.13.4" date="2026-08-02" />
+    <release version="1.12.0" date="2026-08-01" />
+    <release version="1.10.0" date="2026-08-01" />
+  </releases>
+</component>

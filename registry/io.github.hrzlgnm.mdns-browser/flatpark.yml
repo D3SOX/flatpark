@@ -1,0 +1,23 @@
+id: io.github.hrzlgnm.mdns-browser
+name: mDNS Browser
+summary: Cross-platform mDNS/DNS-SD service discovery browser listing services broadcast on the LAN
+website: https://github.com/hrzlgnm/mdns-browser
+source_url: https://github.com/hrzlgnm/mdns-browser
+build:
+  manifest: io.github.hrzlgnm.mdns-browser.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Network
+  tags:
+    - mDNS
+    - DNS-SD
+    - Bonjour
+    - Zeroconf
+    - Network
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
