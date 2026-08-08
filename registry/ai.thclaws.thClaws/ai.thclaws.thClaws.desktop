@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=thClaws
+Comment=Native AI agent workspace with chat, terminal and files
+Exec=thclaws %U
+Icon=ai.thclaws.thClaws
+Terminal=false
+Categories=Development;
+StartupWMClass=thclaws
+Keywords=ai;agent;assistant;llm;mcp;terminal;chat;
