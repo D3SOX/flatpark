@@ -31,6 +31,14 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   # Electron safeStorage for the stored API key / session when a keyring exists.
   - --talk-name=org.freedesktop.secrets
+  # ZCode keeps all of its own state in a hardcoded ~/.zcode: credentials and
+  # config under v2/, the task index, and the bundled agent CLI's db, logs and
+  # plugins under cli/. Flatpak redirects only the XDG dirs, so without this the
+  # directory lands on the ephemeral home overlay and every launch starts signed
+  # out. Granted user-accessible rather than --persist so the GUI and the agent
+  # CLI — which runs on the host through the command bridge below — read and
+  # write the same directory; :create makes it on a fresh first run.
+  - --filesystem=~/.zcode:create
   # Host command bridge: the wrapper generates a runtime PATH directory whose
   # entries forward through flatpak-spawn --host, so the agent's shell tools
   # resolve to the user's own git, Node/npm and language toolchains, which is
