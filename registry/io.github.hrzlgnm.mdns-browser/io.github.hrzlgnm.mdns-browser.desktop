@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=mDNS Browser
+Comment=Browse services advertised on the local network via mDNS/DNS-SD
+Exec=mdns-browser %U
+Icon=io.github.hrzlgnm.mdns-browser
+Terminal=false
+Categories=Network;Utility;
+StartupWMClass=mdns-browser
+Keywords=mDNS;DNS-SD;Bonjour;Zeroconf;service discovery;LAN;

@@ -1,0 +1,53 @@
+id: io.github.hrzlgnm.mdns-browser
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: mdns-browser
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # mDNS Browser is a Tauri (Rust + leptos/thaw, WebKitGTK) frontend over the
+  # mdns-sd library. dri for hardware-accelerated WebKit rendering; ipc/wayland/
+  # fallback-x11 for the window.
+  - --share=ipc
+  # Core function, not optional: mDNS/DNS-SD service discovery is multicast UDP
+  # on 224.0.0.251:5353. The app can only enumerate services that reach the host
+  # network namespace, so it MUST share it.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # No filesystem grant: this app only reads the network, it never touches user
+  # files. No tray either — the binary has no StatusNotifier/ayatana-appindicator
+  # dependency, so neither the ayatana-stack module nor the tray-icon socket is
+  # needed.
+modules:
+  - name: mdns-browser
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 mdns-browser-wrapper /app/bin/mdns-browser
+      - install -Dm644 io.github.hrzlgnm.mdns-browser.desktop /app/share/applications/io.github.hrzlgnm.mdns-browser.desktop
+      - install -Dm644 io.github.hrzlgnm.mdns-browser.metainfo.xml /app/share/metainfo/io.github.hrzlgnm.mdns-browser.metainfo.xml
+      - install -Dm644 io.github.hrzlgnm.mdns-browser.png /app/share/icons/hicolor/256x256/apps/io.github.hrzlgnm.mdns-browser.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: mdns-browser.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/hrzlgnm/mdns-browser/releases/download/v1.15.0/mdns-browser_1.15.0_amd64.deb
+        sha256: 554b57f09c6cc9d09709a1ade3d71aec9e910ecb0959b7e402217350089ca806
+        size: 4890408
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: mdns-browser-wrapper
+      - type: file
+        path: io.github.hrzlgnm.mdns-browser.desktop
+      - type: file
+        path: io.github.hrzlgnm.mdns-browser.metainfo.xml
+      - type: file
+        path: io.github.hrzlgnm.mdns-browser.png

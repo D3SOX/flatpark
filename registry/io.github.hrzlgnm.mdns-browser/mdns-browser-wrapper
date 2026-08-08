@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+# mdns-browser is a single Tauri (WebKitGTK) binary staged by apply_extra to
+# /app/extra/mdns-browser. It links only against libraries in org.gnome.Platform
+# (webkit2gtk-4.1, gtk-3, libsoup-3, dbus-1); it has no tray-icon dependency,
+# so no ayatana stack is needed. mDNS/DNS-SD service discovery runs over
+# multicast UDP on the host network namespace, which the sandbox shares via
+# --share=network. The app stores its own settings under XDG dirs, which Flatpak
+# redirects into ~/.var/app/io.github.hrzlgnm.mdns-browser.
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside the
+# Flatpak sandbox — disabling it is the reliable default for Tauri apps here.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+exec /app/extra/mdns-browser "$@"
