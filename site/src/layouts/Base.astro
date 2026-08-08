@@ -114,10 +114,11 @@ const clientStrings = {
       // Card fold (home page only — the button is what turns it on). The cap is
       // counted in rows rather than cards so the fold lands on a clean edge at
       // every column count, and it is measured off the live grid rather than
-      // guessed from the viewport width.
+      // guessed from the viewport width. Each press buys another five rows
+      // rather than the whole catalog, so the page grows a screenful at a time.
       const moreBtn = document.querySelector('[data-more]');
       const FOLD_ROWS = 5;
-      let expanded = false;
+      let foldRows = FOLD_ROWS;
       let foldCols = 0;
 
       function columns() {
@@ -130,7 +131,7 @@ const clientStrings = {
       function fold(shown) {
         if (!moreBtn || !grid) return;
         foldCols = columns();
-        const limit = expanded ? Infinity : foldCols * FOLD_ROWS;
+        const limit = foldCols * foldRows;
         shown.forEach((card, i) => {
           if (i >= limit) card.hidden = true;
         });
@@ -155,7 +156,7 @@ const clientStrings = {
       searchInput?.addEventListener('input', apply);
 
       moreBtn?.addEventListener('click', () => {
-        expanded = true;
+        foldRows += FOLD_ROWS;
         apply();
       });
 
