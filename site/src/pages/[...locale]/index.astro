@@ -33,8 +33,7 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
           <h1 class="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">{t('home.hero.title.lead')} <span class="text-brand">{t('home.hero.title.middle')}</span> {t('home.hero.title.tail')}</h1>
           <p class="mt-4 max-w-md text-lg text-muted">{t('home.hero.body')}</p>
           <div class="mt-6 flex flex-wrap gap-3">
-            <a href={localizePath('/apps/', lang)} class="inline-flex h-11 items-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">{t('home.hero.browse')}</a>
-            <a href={localizePath('/setup/', lang)} class="inline-flex h-11 items-center rounded-full border border-line bg-surface px-6 text-sm font-semibold transition hover:border-brand">{t('home.hero.setup')}</a>
+            <a href={localizePath('/setup/', lang)} class="inline-flex h-11 items-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">{t('home.hero.setup')}</a>
           </div>
         </div>
         <Featured apps={apps} />
@@ -43,23 +42,43 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
 
     <!-- catalog -->
     <section id="apps" class="mx-auto max-w-6xl px-5 pb-12">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
-        <h2 class="text-lg font-bold">{t('apps.all')}</h2>
-        <div class="flex items-center gap-3">
-          <select
-            data-sort
-            aria-label={t('apps.sort.label')}
-            class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
-          >
-            <option value="updated" selected>{t('apps.sort.recent')}</option>
-            <option value="approved">{t('apps.sort.approved')}</option>
-            <option value="name">{t('apps.sort.name')}</option>
-          </select>
-        </div>
+      <h2 class="sr-only">{t('apps.all')}</h2>
+      <!--
+        The catalog controls follow you down the grid: 51 cards is several
+        screens, and sort is useless once it has scrolled away. It parks under
+        the header (--topbar-h) rather than at the top of the viewport, and the
+        negative margin lets its background span the container's gutters.
+      -->
+      <div
+        class="sticky top-[var(--topbar-h)] z-10 -mx-5 mt-4 flex flex-wrap items-center justify-between gap-3
+          border-y border-line bg-canvas/90 px-5 py-3 backdrop-blur"
+      >
+        <a
+          href={localizePath('/apps/', lang)}
+          class="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3 text-sm font-semibold transition hover:border-brand"
+        >{t('apps.browse')}</a>
+        <select
+          data-sort
+          aria-label={t('apps.sort.label')}
+          class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
+        >
+          <option value="updated" selected>{t('apps.sort.recent')}</option>
+          <option value="approved">{t('apps.sort.approved')}</option>
+          <option value="name">{t('apps.sort.name')}</option>
+        </select>
       </div>
 
       <div data-grid class="mt-6 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
         {ordered.map((app) => <AppCard app={app} />)}
+      </div>
+      <!-- Folded to the first five rows until asked; see the fold in Base.astro. -->
+      <div class="mt-6 flex justify-center">
+        <button
+          type="button"
+          data-more
+          hidden
+          class="inline-flex h-11 items-center rounded-full border border-line bg-surface px-6 text-sm font-semibold transition hover:border-brand"
+        >{t('apps.more')}</button>
       </div>
       <div
         class="mt-6 rounded-2xl border border-dashed border-line p-12 text-center text-muted"

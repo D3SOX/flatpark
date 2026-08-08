@@ -20,9 +20,15 @@ const groups = order
   }))
   .filter((g) => g.items.length);
 
-// External links appended to a group (GitHub lives under Community).
-const externals = { Community: [{ href: 'https://github.com/flatpark/flatpark', label: t('footer.github') }] };
-for (const g of groups) if (externals[g.name]) g.items.push(...externals[g.name]);
+// Links appended to a group: GitHub lives under Community, and /setup/ under
+// Docs. Setup is a route rather than a content page, so it has no front matter
+// to place it — and the footer is the one entry point to it that every page
+// carries, now that the header no longer does.
+const extras = {
+  Docs: [{ href: localizePath('/setup/', lang), label: t('nav.setup') }],
+  Community: [{ href: 'https://github.com/flatpark/flatpark', label: t('footer.github') }],
+};
+for (const g of groups) if (extras[g.name]) g.items.push(...extras[g.name]);
 ---
 
 <footer class="border-t border-line">
