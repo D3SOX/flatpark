@@ -19,6 +19,11 @@ import sharp from 'sharp';
 // that is already English. The client-side category filter matches on this slug
 // too, which keeps filtering locale-independent.
 const SECTION_MAP = {
+  // AppStream has no category for this one, so `AI` is a FlatPark-only value an
+  // app sets in its descriptor's catalog.category. It stays out of the metainfo,
+  // where the app keeps a real AppStream category (Development, Office, …) so
+  // desktop menus still place it sensibly.
+  AI: 'ai',
   Development: 'development', IDE: 'development', Building: 'development',
   Finance: 'finance',
   Network: 'communication', Communication: 'communication', Chat: 'communication',

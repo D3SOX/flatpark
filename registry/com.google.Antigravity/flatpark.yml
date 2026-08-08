@@ -7,7 +7,7 @@ build:
   branch: stable
   mode: extra-data
 catalog:
-  category: Development
+  category: AI
   tags:
     - Development
     - AI
