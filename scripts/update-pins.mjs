@@ -4,7 +4,16 @@
 //
 //   <resolver JSON on stdin> | update-pins.mjs <manifest> [metainfo]
 //
-// Resolver JSON: { version, releaseDate, sources: [ { filename, url } ] }
+// Resolver JSON: { version, releaseDate, sources: [ { filename, url } ],
+//                  releaseUrl?, releaseNotes? }
+//
+// releaseUrl and releaseNotes are optional per-app opt-ins. releaseUrl becomes
+// the release's <url type="details">, i.e. a link to upstream's own notes.
+// releaseNotes is an AppStream <description> body (<p>/<ul>/<li>/...) written
+// through VERBATIM — FlatPark never reformats or trims upstream's prose. An app
+// wires it up in its own resolver or leaves it out; without it the release gets
+// an empty <description></description> for a human to fill in later, which is
+// also what Flathub's external-data-checker writes.
 //
 // The comparison anchor is the VERSION: the latest <release version="..."> in
 // the metainfo is "what we have". If the resolver's version equals it, nothing
@@ -16,9 +25,12 @@
 // Exit 0  = changed (manifest and/or metainfo rewritten); prints the version.
 // Exit 10 = nothing changed.
 // Exit 1  = error.
-import { readFileSync, writeFileSync, existsSync, createReadStream } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, createReadStream, mkdtempSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const BEGIN = '# BEGIN MANAGED EXTRA-DATA';
 const END = '# END MANAGED EXTRA-DATA';
@@ -112,17 +124,99 @@ for (const src of resolver.sources) {
 
 const manifestChanged = out.join('\n') !== oldBlock.join('\n');
 
+const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// Re-indent a verbatim XML fragment under `pad`, keeping its own relative
+// nesting (a <li> stays indented under its <ul>) but discarding whatever base
+// indentation upstream happened to emit it with.
+function reindent(fragment, pad) {
+  const src = fragment.replace(/\r/g, '').split('\n').filter((l) => l.trim());
+  const base = Math.min(...src.map((l) => l.match(/^ */)[0].length));
+  return src.map((l) => pad + l.slice(base)).join('\n');
+}
+
+// Build the <release> element. `withNotes` says whether upstream's prose passed
+// the guard below; when it did not, the element still carries the version, the
+// date and the details link, so bad notes can never hold up an update.
+function releaseElement(withNotes) {
+  const I = '    ';
+  const date = resolver.releaseDate ? ` date="${escAttr(resolver.releaseDate)}"` : '';
+  const el = [`${I}<release version="${escAttr(resolver.version)}"${date}>`];
+  if (resolver.releaseUrl) el.push(`${I}  <url type="details">${escText(resolver.releaseUrl)}</url>`);
+  if (withNotes && String(resolver.releaseNotes || '').trim()) {
+    el.push(`${I}  <description>`);
+    el.push(reindent(resolver.releaseNotes, `${I}    `));
+    el.push(`${I}  </description>`);
+  } else {
+    // An empty element, not a self-closing one: it reads as a slot someone can
+    // still fill in by hand rather than as a field that does not exist.
+    el.push(`${I}  <description></description>`);
+  }
+  el.push(`${I}</release>`);
+  return el.join('\n');
+}
+
+const insertRelease = (rel) => {
+  if (/<releases\b[^>]*>/.test(metainfo)) {
+    return metainfo.replace(/(<releases\b[^>]*>)/, `$1\n${rel}`);
+  }
+  if (metainfo.includes('</component>')) {
+    return metainfo.replace('</component>', `  <releases>\n${rel}\n  </releases>\n</component>`);
+  }
+  return metainfo;
+};
+
+// Guard for the one part we do not control: upstream's notes. The fragment is
+// validated inside a synthetic component that is otherwise clean, NOT inside
+// the app's own metainfo — an app carrying an unrelated pre-existing warning
+// must not silently switch this check off. Best-effort: appstreamcli is not a
+// hard dependency of the update run, and a missing validator just means the
+// notes go in unchecked, exactly as they did before this guard existed.
+function notesAreValid(notes) {
+  const probe = spawnSync('appstreamcli', ['--version'], { stdio: 'ignore' });
+  if (probe.error || probe.status !== 0) return true;
+  const dir = mkdtempSync(join(tmpdir(), 'flatpark-pins-'));
+  try {
+    const p = join(dir, 'org.flatpark.notesprobe.metainfo.xml');
+    writeFileSync(p, [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<component type="desktop-application">',
+      '  <id>org.flatpark.notesprobe</id>',
+      '  <name>Notes Probe</name>',
+      '  <summary>Probe used to validate a release description fragment</summary>',
+      '  <metadata_license>CC0-1.0</metadata_license>',
+      '  <project_license>MIT</project_license>',
+      '  <description><p>Probe component whose only variable content is the release description fragment under test.</p></description>',
+      '  <url type="homepage">https://flatpark.org</url>',
+      '  <launchable type="desktop-id">org.flatpark.notesprobe.desktop</launchable>',
+      '  <releases>',
+      '    <release version="1.0" date="2026-01-01">',
+      '      <description>',
+      reindent(notes, '        '),
+      '      </description>',
+      '    </release>',
+      '  </releases>',
+      '</component>',
+    ].join('\n'));
+    return spawnSync('appstreamcli', ['validate', '--no-net', p], { stdio: 'ignore' }).status === 0;
+  } catch {
+    return false; // e.g. reindent choking on an empty fragment
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 // Prepend a <release> to the metainfo when the version moved.
 let metainfoChanged = false;
 let newMetainfo = metainfo;
 if (metainfo && resolver.version && resolver.version !== knownVersion) {
-  const date = resolver.releaseDate ? ` date="${resolver.releaseDate}"` : '';
-  const rel = `<release version="${resolver.version}"${date} />`;
-  if (/<releases\b[^>]*>/.test(metainfo)) {
-    newMetainfo = metainfo.replace(/(<releases\b[^>]*>)/, `$1\n    ${rel}`);
-  } else if (metainfo.includes('</component>')) {
-    newMetainfo = metainfo.replace('</component>', `  <releases>\n    ${rel}\n  </releases>\n</component>`);
+  const notes = String(resolver.releaseNotes || '').trim();
+  const keepNotes = notes ? notesAreValid(notes) : false;
+  if (notes && !keepNotes) {
+    process.stderr.write('update-pins: releaseNotes failed AppStream validation, dropping them\n');
   }
+  newMetainfo = insertRelease(releaseElement(keepNotes));
   metainfoChanged = newMetainfo !== metainfo;
 }
 
