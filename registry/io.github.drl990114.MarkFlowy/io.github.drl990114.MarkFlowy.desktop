@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=MarkFlowy
+Comment=Extensible Markdown editor with a built-in AI assistant
+Exec=markflowy %F
+Icon=io.github.drl990114.MarkFlowy
+Terminal=false
+Categories=Office;TextEditor;
+StartupWMClass=markflowy
+StartupNotify=true
+MimeType=text/markdown;text/plain;
+Keywords=markdown;editor;notes;writing;ai;

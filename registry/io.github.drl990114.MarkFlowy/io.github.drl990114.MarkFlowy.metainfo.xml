@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.drl990114.MarkFlowy</id>
+  <name>MarkFlowy</name>
+  <summary>Extensible Markdown editor with a built-in AI assistant</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  <developer id="io.github.drl990114">
+    <name>drl990114</name>
+  </developer>
+  <url type="homepage">https://www.markflowy.cc</url>
+  <url type="bugtracker">https://github.com/drl990114/MarkFlowy/issues</url>
+  <url type="vcs-browser">https://github.com/drl990114/MarkFlowy</url>
+  <description>
+    <p>This is a community package of MarkFlowy, maintained independently. It repackages the official upstream build unmodified.</p>
+    <p>MarkFlowy is a lightweight, extensible Markdown editor built on Tauri. It keeps your notes as plain Markdown files on disk and adds an optional AI assistant on top.</p>
+    <ul>
+      <li>WYSIWYG and source modes over a ProseMirror-based editor</li>
+      <li>Themes and an extension system</li>
+      <li>Optional AI assistant backed by a model API you configure</li>
+      <li>Exports to HTML and PDF</li>
+    </ul>
+    <p>By default this package can read and write only your Documents folder. If you keep Markdown files elsewhere, grant that directory yourself:</p>
+    <ul>
+      <li>A notes directory: flatpak override --user --filesystem=~/notes io.github.drl990114.MarkFlowy</li>
+      <li>A git checkout: flatpak override --user --filesystem=~/src io.github.drl990114.MarkFlowy</li>
+      <li>Your whole home (widest, only if you want it): flatpak override --user --filesystem=home io.github.drl990114.MarkFlowy</li>
+    </ul>
+    <p>Grant directories, not individual files: a single-file grant becomes a bind mount inside the sandbox, and editors that save by writing a temporary file and renaming it over the original cannot replace a mount point.</p>
+    <p>The AI assistant is optional and off until you configure a provider. Nothing is sent anywhere unless you set that up.</p>
+  </description>
+  <launchable type="desktop-id">io.github.drl990114.MarkFlowy.desktop</launchable>
+  <categories>
+    <category>Office</category>
+    <category>TextEditor</category>
+  </categories>
+  <keywords>
+    <keyword>markdown</keyword>
+    <keyword>editor</keyword>
+    <keyword>notes</keyword>
+    <keyword>writing</keyword>
+    <keyword>ai</keyword>
+  </keywords>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>markflowy</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Editing Markdown with the AI assistant panel</caption>
+      <image>https://raw.githubusercontent.com/drl990114/MarkFlowy/main/apps/web/public/screenshots/ai.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Dark mode</caption>
+      <image>https://raw.githubusercontent.com/drl990114/MarkFlowy/main/apps/web/public/screenshots/darkmode.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Source code mode</caption>
+      <image>https://raw.githubusercontent.com/drl990114/MarkFlowy/main/apps/web/public/screenshots/sourcecode.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.85.2" date="2026-08-02" />
+    <release version="0.85.0" date="2026-07-25" />
+    <release version="0.84.0" date="2026-07-19" />
+    <release version="0.83.0" date="2026-07-12" />
+    <release version="0.82.1" date="2026-07-05" />
+    <release version="0.82.0" date="2026-07-04" />
+    <release version="0.81.5" date="2026-06-07" />
+    <release version="0.81.0" date="2026-06-06" />
+  </releases>
+</component>
