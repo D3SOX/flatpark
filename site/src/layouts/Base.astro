@@ -107,24 +107,64 @@ const clientStrings = {
 
       const searchInput = document.querySelector('[data-search]');
       const cards = Array.from(document.querySelectorAll('[data-app-card]'));
+      const grid = document.querySelector('[data-grid]');
       const empty = document.querySelector('[data-empty]');
       let activeSection = '';
 
+      // Card fold (home page only — the button is what turns it on). The cap is
+      // counted in rows rather than cards so the fold lands on a clean edge at
+      // every column count, and it is measured off the live grid rather than
+      // guessed from the viewport width.
+      const moreBtn = document.querySelector('[data-more]');
+      const FOLD_ROWS = 5;
+      let expanded = false;
+      let foldCols = 0;
+
+      function columns() {
+        const tracks = grid ? getComputedStyle(grid).gridTemplateColumns : 'none';
+        return tracks === 'none' ? 1 : tracks.split(' ').filter(Boolean).length;
+      }
+
+      // `shown` is in DOM order, so the cards left standing are the first rows
+      // of whatever sort is active.
+      function fold(shown) {
+        if (!moreBtn || !grid) return;
+        foldCols = columns();
+        const limit = expanded ? Infinity : foldCols * FOLD_ROWS;
+        shown.forEach((card, i) => {
+          if (i >= limit) card.hidden = true;
+        });
+        moreBtn.hidden = shown.length <= limit;
+      }
+
       function apply() {
         const q = (searchInput?.value || '').trim().toLowerCase();
-        let visible = 0;
+        const shown = [];
         for (const card of cards) {
           const hay = card.dataset.search || '';
           const okSearch = q === '' || hay.includes(q);
           const okSection = !activeSection || card.dataset.section === activeSection;
           const show = okSearch && okSection;
           card.hidden = !show;
-          if (show) visible += 1;
+          if (show) shown.push(card);
         }
-        if (empty) empty.hidden = visible !== 0;
+        if (empty) empty.hidden = shown.length !== 0;
+        fold(shown);
       }
 
       searchInput?.addEventListener('input', apply);
+
+      moreBtn?.addEventListener('click', () => {
+        expanded = true;
+        apply();
+      });
+
+      // A resize that changes the column count moves the fold line with it.
+      if (moreBtn) {
+        window.addEventListener('resize', () => {
+          if (columns() !== foldCols) apply();
+        });
+      }
 
       // Category sidebar (browse page): filter cards by curated section.
       for (const btn of document.querySelectorAll('[data-section-filter]')) {
@@ -138,7 +178,6 @@ const clientStrings = {
       }
 
       // Sort dropdown: reorder the grid in place. ISO data-updated sorts as text.
-      const grid = document.querySelector('[data-grid]');
       const sortSel = document.querySelector('[data-sort]');
       sortSel?.addEventListener('change', () => {
         const mode = sortSel.value;
@@ -150,6 +189,10 @@ const clientStrings = {
           return f || (a.dataset.name || '').localeCompare(b.dataset.name || '');
         });
         for (const c of sorted) grid?.appendChild(c);
+        // Keep the array in DOM order: the fold takes the first N cards from it,
+        // and a stale order would fold away the wrong ones after a re-sort.
+        cards.splice(0, cards.length, ...sorted);
+        apply();
       });
 
       // Featured carousel: rotate slides, update counter/dots. Pauses for

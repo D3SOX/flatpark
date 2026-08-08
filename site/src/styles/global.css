@@ -46,6 +46,19 @@ html {
   font-family: var(--font-sans);
 }
 
+/* Height of the sticky header, so a second sticky bar can park right under it.
+   Below 480px the header wraps the search onto its own row (see Topbar) and
+   grows from 64px to 116px — a hard-coded top-16 would tuck the bar behind it. */
+:root {
+  --topbar-h: 7.25rem;
+}
+
+@media (min-width: 480px) {
+  :root {
+    --topbar-h: 4rem;
+  }
+}
+
 /* Theme toggle: show the moon in light mode, the sun in dark mode. */
 .theme-sun { display: none; }
 html.dark .theme-sun { display: inline; }
