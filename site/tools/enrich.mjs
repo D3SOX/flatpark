@@ -109,7 +109,14 @@ const xml = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', 
 // <p> and <ul>/<ol> blocks keep the order they appear in the document.
 // trimValues stays off so the spaces around inline children (e.g. the text
 // before a <code>) survive; orderedText collapses whitespace runs at the end.
-const xmlOrdered = new XMLParser({ ignoreAttributes: true, preserveOrder: true, trimValues: false });
+// Attributes are kept so the ordered pass can tell one <release> from another
+// by version; both walkers below skip the ':@' node they arrive in.
+const xmlOrdered = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '@_',
+  preserveOrder: true,
+  trimValues: false,
+});
 
 // Flatten preserveOrder nodes into a string, recursing into inline children so
 // the text inside <code>/<em>/... is kept (e.g. a <li>'s flatpak-override
@@ -163,21 +170,13 @@ const orderedRuns = (nodes) => {
   return runs.filter((r) => 'code' in r || r.text !== '');
 };
 
-// Parse an AppStream <description> into ordered blocks the detail page renders:
-// { type: 'p', runs } for paragraphs and { type: 'list', items } for <ul>/<ol>,
-// where each item is itself an array of runs. See orderedRuns for the run shape.
-function descriptionBlocks(rawXml) {
-  let tree;
-  try {
-    tree = xmlOrdered.parse(rawXml);
-  } catch {
-    return [];
-  }
-  const comp = toArray(tree).find((n) => n && 'component' in n);
-  const descNode = comp && toArray(comp.component).find((n) => n && 'description' in n);
-  if (!descNode) return [];
+// Turn the children of an AppStream <description> into ordered blocks the
+// detail page renders: { type: 'p', runs } for paragraphs and
+// { type: 'list', items } for <ul>/<ol>, where each item is itself an array of
+// runs. See orderedRuns for the run shape.
+function blocksFrom(descChildren) {
   const blocks = [];
-  for (const node of toArray(descNode.description)) {
+  for (const node of toArray(descChildren)) {
     if (!node || typeof node !== 'object') continue;
     if ('p' in node) {
       const runs = orderedRuns(node.p);
@@ -191,6 +190,47 @@ function descriptionBlocks(rawXml) {
     }
   }
   return blocks;
+}
+
+const parseOrdered = (rawXml) => {
+  try {
+    return xmlOrdered.parse(rawXml);
+  } catch {
+    return null;
+  }
+};
+
+const componentChildren = (rawXml) => {
+  const comp = toArray(parseOrdered(rawXml)).find((n) => n && 'component' in n);
+  return comp ? toArray(comp.component) : [];
+};
+
+// The component-level <description>, i.e. the About prose.
+function descriptionBlocks(rawXml) {
+  const descNode = componentChildren(rawXml).find((n) => n && 'description' in n);
+  return descNode ? blocksFrom(descNode.description) : [];
+}
+
+// Per-release <url type="details"> and <description>, keyed by version. The
+// attribute-blind flat parse used for version/date cannot reach either, and
+// notes need the ordered walk to keep <p>/<ul> in document order.
+function releaseExtras(rawXml) {
+  const relsNode = componentChildren(rawXml).find((n) => n && 'releases' in n);
+  if (!relsNode) return {};
+  const out = {};
+  for (const rel of toArray(relsNode.releases)) {
+    if (!rel || !('release' in rel)) continue;
+    const version = String(rel[':@']?.['@_version'] ?? '').trim();
+    if (!version || version in out) continue;
+    const kids = toArray(rel.release);
+    const urlNode = kids.find((n) => n && 'url' in n);
+    const descNode = kids.find((n) => n && 'description' in n);
+    out[version] = {
+      url: urlNode ? orderedText(urlNode.url) : '',
+      notes: descNode ? blocksFrom(descNode.description) : [],
+    };
+  }
+  return out;
 }
 
 function parseManifest(path) {
@@ -346,10 +386,19 @@ async function enrichOne(file) {
         const img = imgs.find((i) => (typeof i === 'object' ? i['@_type'] : 'source') === 'source') || imgs[0];
         return { url: textOf(img), caption: textOf(s.caption) };
       }).filter((s) => s.url);
-      out.releases = toArray(comp.releases?.release).map((r) => ({
-        version: String(r['@_version'] ?? ''),
-        date: String(r['@_date'] ?? ''),
-      })).filter((r) => r.version);
+      // Notes are upstream's own words when they bothered to supply them; `url`
+      // links out to their release page. Either, both or neither may be there.
+      const extras = releaseExtras(rawXml);
+      out.releases = toArray(comp.releases?.release).map((r) => {
+        const version = String(r['@_version'] ?? '');
+        const extra = extras[version] || {};
+        return {
+          version,
+          date: String(r['@_date'] ?? ''),
+          url: extra.url || '',
+          notes: extra.notes || [],
+        };
+      }).filter((r) => r.version);
       out.developer = textOf(comp.developer?.name) || textOf(comp.developer_name) || '';
       const lic = parseLicense(textOf(comp.project_license));
       if (lic) out.license = lic;
