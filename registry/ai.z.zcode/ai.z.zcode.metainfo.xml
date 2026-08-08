@@ -19,7 +19,7 @@
       <li>Work in built-in terminal panes alongside the agent.</li>
     </ul>
     <p>An account with Z.ai is required for the agent features; the app itself is free to install.</p>
-    <p>Permissions: this package grants network, display, GPU, audio, notifications and keyring access. It does not grant broad home-directory access — pick a project through the file-chooser portal and ZCode can work in it, while ZCode's own state stays under the sandboxed home.</p>
+    <p>Permissions: this package grants network, display, GPU, audio, notifications and keyring access, plus its own <code>~/.zcode</code> directory, where ZCode keeps your sign-in, settings and task history. It does not grant broad home-directory access — pick a project through the file-chooser portal and ZCode can work in it.</p>
     <p>The agent shells out to developer tools that no Flatpak runtime ships. This package puts a bridge on the app's PATH that forwards those commands to the same tools on your host, so your existing Git, Node and language toolchains — and the credentials you have already authorized there — are what run. FlatPark does not bundle or authenticate any of them.</p>
     <p>Because host commands run against real host paths, a project opened through the portal is visible to the app but not at the same path on the host. To let the two line up, grant access to where your projects live:</p>
     <ul>
