@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+# FlatPark entry point for MarkFlowy.
+#
+# markflowy is a single Tauri (WebKitGTK) binary staged by apply_extra to
+# /app/extra/markflowy. Every library it links against - webkit2gtk-4.1, gtk-3,
+# libsoup-3, libssl/libcrypto 3, fontconfig - comes from org.gnome.Platform, and
+# the binary declares no tray icon, so the Ayatana appindicator stack is not
+# needed.
+#
+# Editor state goes to $XDG_CONFIG_HOME/$XDG_DATA_HOME, which Flatpak points
+# inside ~/.var/app/io.github.drl990114.MarkFlowy/. Only xdg-documents is granted
+# by default, so files kept elsewhere need a `flatpak override` (see the app
+# description).
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside the
+# Flatpak sandbox. Disabling it is the reliable default for a WebKitGTK app.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+exec /app/extra/markflowy "$@"

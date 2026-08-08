@@ -1,0 +1,55 @@
+id: io.github.drl990114.MarkFlowy
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: markflowy
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # MarkFlowy is a Tauri (Rust + React/ProseMirror, WebKitGTK) Markdown editor.
+  # dri for hardware-accelerated WebKit rendering; ipc/wayland/fallback-x11 for
+  # the window.
+  - --share=ipc
+  # The built-in AI assistant talks to external model APIs the user configures,
+  # so the editor needs network access to be useful beyond plain editing.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Documents only by default: an editor has to reach the user's .md files, but
+  # the smallest useful grant is xdg-documents, not home. Other locations
+  # (~/notes, a git checkout, ...) are opt-in via `flatpak override`; the
+  # commands are in the AppStream description.
+  - --filesystem=xdg-documents
+  # No tray: the binary carries no StatusNotifier/appindicator dependency, so
+  # neither the ayatana-stack module nor xdg-run/tray-icon is needed here.
+modules:
+  - name: markflowy
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 markflowy-wrapper /app/bin/markflowy
+      - install -Dm644 io.github.drl990114.MarkFlowy.desktop /app/share/applications/io.github.drl990114.MarkFlowy.desktop
+      - install -Dm644 io.github.drl990114.MarkFlowy.metainfo.xml /app/share/metainfo/io.github.drl990114.MarkFlowy.metainfo.xml
+      - install -Dm644 io.github.drl990114.MarkFlowy.png /app/share/icons/hicolor/256x256/apps/io.github.drl990114.MarkFlowy.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: markflowy.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/drl990114/MarkFlowy/releases/download/v0.85.2/MarkFlowy_v0.85.2_amd64.deb
+        sha256: 36a42383f8c96b2e662c81ce27b7b414509e026bef1779d50176d58cdbcddcce
+        size: 20614656
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: markflowy-wrapper
+      - type: file
+        path: io.github.drl990114.MarkFlowy.desktop
+      - type: file
+        path: io.github.drl990114.MarkFlowy.metainfo.xml
+      - type: file
+        path: io.github.drl990114.MarkFlowy.png

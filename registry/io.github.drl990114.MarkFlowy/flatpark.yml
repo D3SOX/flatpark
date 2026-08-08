@@ -1,0 +1,23 @@
+id: io.github.drl990114.MarkFlowy
+name: MarkFlowy
+summary: Extensible Markdown editor with a built-in AI assistant
+website: https://www.markflowy.cc
+source_url: https://github.com/drl990114/MarkFlowy
+build:
+  manifest: io.github.drl990114.MarkFlowy.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Office
+  tags:
+    - Markdown
+    - Editor
+    - Notes
+    - AI
+    - Tauri
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
