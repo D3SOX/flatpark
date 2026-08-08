@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.l1xnan.duckling</id>
+  <name>Duckling</name>
+  <summary>Fast viewer for CSV/Parquet files and SQL databases</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.l1xnan">
+    <name>l1xnan</name>
+  </developer>
+  <url type="homepage">https://l1xnan.github.io/duckling/</url>
+  <url type="bugtracker">https://github.com/l1xnan/duckling/issues</url>
+  <url type="vcs-browser">https://github.com/l1xnan/duckling</url>
+  <description>
+    <p>This is a community package of Duckling, maintained independently. It repackages the official upstream build unmodified.</p>
+    <p>Duckling is a lightweight desktop viewer for quickly exploring CSV, Parquet and JSON data files, DuckDB and SQLite databases, and remote SQL databases.</p>
+    <ul>
+      <li>Browse data in a paginated grid with filtering, column controls and value inspection</li>
+      <li>Write and run SQL with schema-aware completion, formatting, history and saved queries</li>
+      <li>Explore data with pivot tables, column profiles and value distributions</li>
+      <li>Connect to PostgreSQL, MySQL and ClickHouse in addition to local DuckDB and SQLite data</li>
+      <li>Export query results to CSV, TSV, JSON, Parquet or XLSX</li>
+    </ul>
+    <p>By default this package can read and write files in your Documents and Downloads directories. Duckling's settings, connection information and other application data stay in its private per-app directory.</p>
+    <p>To keep data in another directory, grant only that location: <code>flatpak override --user --filesystem=/path/to/data io.github.l1xnan.duckling</code>. If you prefer to expose your whole home directory, opt in with <code>flatpak override --user --filesystem=home io.github.l1xnan.duckling</code>. Remove custom grants with <code>flatpak override --user --reset io.github.l1xnan.duckling</code>.</p>
+    <p>Duckling needs network access for its remote PostgreSQL, MySQL and ClickHouse connections. Install application updates through Flatpak; the built-in updater cannot replace the read-only Flatpak application.</p>
+  </description>
+  <launchable type="desktop-id">io.github.l1xnan.duckling.desktop</launchable>
+  <categories>
+    <category>Development</category>
+    <category>Database</category>
+  </categories>
+  <keywords>
+    <keyword>database</keyword>
+    <keyword>sql</keyword>
+    <keyword>csv</keyword>
+    <keyword>parquet</keyword>
+    <keyword>duckdb</keyword>
+    <keyword>sqlite</keyword>
+    <keyword>postgresql</keyword>
+    <keyword>mysql</keyword>
+    <keyword>clickhouse</keyword>
+    <keyword>viewer</keyword>
+  </keywords>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>duckling</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Browsing data in Duckling's dark interface</caption>
+      <image>https://raw.githubusercontent.com/l1xnan/duckling/main/assets/screenshot-dark.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Browsing data in Duckling's light interface</caption>
+      <image>https://raw.githubusercontent.com/l1xnan/duckling/main/assets/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.58.0" date="2026-07-30" />
+  </releases>
+</component>

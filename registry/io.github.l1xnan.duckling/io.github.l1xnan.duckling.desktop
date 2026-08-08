@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Duckling
+Comment=Fast viewer for CSV/Parquet files and SQL databases
+Exec=duckling %F
+Icon=io.github.l1xnan.duckling
+Terminal=false
+Categories=Development;Database;
+StartupWMClass=duckling
+StartupNotify=true
+MimeType=text/csv;application/vnd.sqlite3;
+Keywords=database;sql;csv;parquet;duckdb;sqlite;postgresql;mysql;clickhouse;viewer;

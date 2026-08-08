@@ -1,0 +1,65 @@
+id: io.github.l1xnan.duckling
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: duckling
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Tauri/WebKitGTK viewer for local CSV/Parquet and DuckDB/SQLite files, plus
+  # remote PostgreSQL, MySQL and ClickHouse databases. Network is a core
+  # capability; dri supports accelerated WebKit rendering.
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # System tray (Tauri tray-icon).
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+  # Default local-data access is limited to the two common locations for data
+  # files. Users can opt into another directory with the override documented in
+  # the AppStream description; the package does not pre-grant the whole home.
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+modules:
+  # Duckling's Tauri tray-icon dlopen-s libayatana-appindicator at startup. The
+  # GNOME runtime does not ship it, so use FlatPark's pinned GNOME 50 Ayatana
+  # support stack before installing the official Duckling payload.
+  - name: ayatana-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
+        sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
+  - name: duckling
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 duckling-wrapper /app/bin/duckling
+      - install -Dm644 io.github.l1xnan.duckling.desktop /app/share/applications/io.github.l1xnan.duckling.desktop
+      - install -Dm644 io.github.l1xnan.duckling.metainfo.xml /app/share/metainfo/io.github.l1xnan.duckling.metainfo.xml
+      - install -Dm644 io.github.l1xnan.duckling.png /app/share/icons/hicolor/256x256/apps/io.github.l1xnan.duckling.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: duckling.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/l1xnan/duckling/releases/download/v0.58.0/Duckling_0.58.0_amd64.deb
+        sha256: c8b8e8cca0fee56595c7c0e73bebf37b24392d7f99e1b0b9be61c91f799af418
+        size: 38164390
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: duckling-wrapper
+      - type: file
+        path: io.github.l1xnan.duckling.desktop
+      - type: file
+        path: io.github.l1xnan.duckling.metainfo.xml
+      - type: file
+        path: io.github.l1xnan.duckling.png
