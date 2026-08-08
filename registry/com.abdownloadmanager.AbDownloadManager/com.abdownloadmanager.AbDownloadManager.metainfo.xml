@@ -22,7 +22,8 @@
       <li>Speed limiting and download categories</li>
       <li>Clipboard and link monitoring</li>
     </ul>
-    <p>The browser-integration extension works inside the sandbox: it connects to the app's local listener over loopback, shared via the network permission. Downloads are saved to your Downloads folder by default; to save to another location, grant it with "flatpak override".</p>
+    <p>The browser-integration extension works inside the sandbox: it connects to the app's local listener over loopback, shared via the network permission. Native messaging is not wired up under Flatpak, because the host browser cannot reach the helper binary inside the sandbox.</p>
+    <p>Permissions: downloads are saved to your Downloads folder by default; to save somewhere else, grant that path with "flatpak override --user --filesystem=/path/to/dir com.abdownloadmanager.AbDownloadManager". Settings, the download database and download parts live in ~/.abdm, the same location the native package uses, so an existing installation's data is picked up as-is.</p>
   </description>
   <screenshots>
     <screenshot type="default">

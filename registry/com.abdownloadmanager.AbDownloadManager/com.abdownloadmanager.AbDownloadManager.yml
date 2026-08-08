@@ -22,12 +22,35 @@ finish-args:
   # Download-complete desktop notifications and the system-tray icon.
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher
-  # Default download location. The app's own config lives under the per-app HOME
-  # (Flatpak redirects $HOME), so no extra grant is needed for it. Custom
-  # download directories outside ~/Downloads must be granted by the user
-  # (flatpak override --filesystem=...).
+  # The tray backend claims org.kde.StatusNotifierItem-<pid>-1 and does not
+  # retry when that name is taken. abdm-wrapper pins the reported PID to 424242
+  # (see the fake-getpid module) so this single name is all it ever needs;
+  # without the pin every sandboxed tray app competes for the PID-2 name.
+  - --own-name=org.kde.StatusNotifierItem-424242-1
+  # Default download location: Flatpak maps xdg-download into the sandbox and
+  # generates a matching user-dirs.dirs, so the app's ~/Downloads/ABDM tree
+  # resolves to the real Downloads folder. Custom download directories outside
+  # it must be granted by the user (flatpak override --filesystem=...).
   - --filesystem=xdg-download
+  # ABDM stores its settings, download database and single-instance lock in
+  # ~/.abdm (built from the user.home JVM property). Flatpak does not redirect
+  # $HOME — it only redirects the XDG dirs — so without this grant the whole
+  # directory lands in the sandbox tmpfs: settings and download history are lost
+  # on exit, and a second launch cannot see the first instance's lock, so it
+  # starts a duplicate app that fails to bind the browser-integration port and
+  # reports "Can't run browser integration". Real-home :create (not --persist)
+  # so the dir is user-accessible and shared with an existing native install.
+  - --filesystem=~/.abdm:create
 modules:
+  - name: abdm-fakepid
+    buildsystem: simple
+    build-commands:
+      - cc -shared -fPIC -O2 fake-getpid.c -o libfakepid.so -ldl
+      - install -Dm755 libfakepid.so /app/lib/abdm/libfakepid.so
+    sources:
+      - type: file
+        path: fake-getpid.c
+
   - name: ab-download-manager
     buildsystem: simple
     build-commands:
