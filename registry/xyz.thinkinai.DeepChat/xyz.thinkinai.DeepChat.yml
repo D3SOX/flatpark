@@ -1,0 +1,79 @@
+id: xyz.thinkinai.DeepChat
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox, so the app keeps an internal
+# sandbox (the wrapper runs it via zypak-wrapper) instead of --no-sandbox. The
+# base is a prebuilt ref merged into the app at build time; the app stays
+# self-contained.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: deepchat
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Electron (Chromium) AI client. The prebuilt build bundles Chromium and its
+  # own ffmpeg/ANGLE/Vulkan; the GTK3, NSS, CUPS, ATK, ALSA, dbus, gbm and X11
+  # stacks it links come from org.freedesktop.Platform 25.08 — verified against
+  # the binary's NEEDED set, 0 missing.
+  - --share=ipc
+  # Talks to the model providers over HTTPS and to a local Ollama or LM Studio
+  # over the loopback interface. MCP servers are fetched on demand, and the
+  # small Node/uv runtime that runs stdio MCP servers is downloaded on first use
+  # into the app's own data directory.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # GPU-accelerated Chromium compositing.
+  - --device=dri
+  # Speech input and audio playback in conversations.
+  - --socket=pulseaudio
+  # Desktop notifications for finished replies and background agent runs.
+  - --talk-name=org.freedesktop.Notifications
+  # The app offers a system tray icon; Electron publishes it over the
+  # StatusNotifierItem protocol, which needs the watcher name.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Encrypt stored provider credentials (Electron safeStorage) through the
+  # Secret Service when a keyring is present.
+  - --talk-name=org.freedesktop.secrets
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the binary — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # can't reach — always start as the GUI app rather than as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # No filesystem grant. Conversations, provider settings, MCP configuration and
+  # the downloaded MCP runtime all live under the XDG directories Flatpak
+  # redirects into the per-app data directory. Attaching a file goes through the
+  # desktop portal. Letting the built-in file tools work on a real directory is
+  # an explicit opt-in; the metainfo carries the exact `flatpak override`
+  # commands.
+modules:
+  - name: deepchat
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 deepchat-wrapper /app/bin/deepchat
+      - install -Dm644 xyz.thinkinai.DeepChat.desktop /app/share/applications/xyz.thinkinai.DeepChat.desktop
+      - install -Dm644 xyz.thinkinai.DeepChat.metainfo.xml /app/share/metainfo/xyz.thinkinai.DeepChat.metainfo.xml
+      - install -Dm644 xyz.thinkinai.DeepChat.png /app/share/icons/hicolor/512x512/apps/xyz.thinkinai.DeepChat.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: deepchat.tar.gz
+        only-arches:
+          - x86_64
+        url: https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.0.9/DeepChat-1.0.9-linux-x64.tar.gz
+        sha256: 7387e7f0bd63555ef56d398bf8805ebf29762a9b7ba24bee509dfee2838d2537
+        size: 215573334
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: deepchat-wrapper
+      - type: file
+        path: xyz.thinkinai.DeepChat.desktop
+      - type: file
+        path: xyz.thinkinai.DeepChat.metainfo.xml
+      - type: file
+        path: xyz.thinkinai.DeepChat.png

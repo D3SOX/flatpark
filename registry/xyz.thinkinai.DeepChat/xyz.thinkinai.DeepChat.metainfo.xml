@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>xyz.thinkinai.DeepChat</id>
+  <name>DeepChat</name>
+  <summary>Local-first AI client with MCP, skills and agents</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <developer id="xyz.thinkinai">
+    <name>ThinkInAI</name>
+  </developer>
+  <url type="homepage">https://deepchat.thinkinai.xyz/</url>
+  <url type="bugtracker">https://github.com/ThinkInAIXYZ/deepchat/issues</url>
+  <url type="vcs-browser">https://github.com/ThinkInAIXYZ/deepchat</url>
+  <description>
+    <p>This is a community package of DeepChat, maintained independently and unaffiliated with DeepChat or ThinkInAI. It repackages the official upstream Linux build unmodified.</p>
+    <p>DeepChat is a local-first desktop client for large language models that goes past plain chat: it hosts Model Context Protocol servers, runs skills and agents, and speaks the Agent Client Protocol, so one window can drive many providers and many tools.</p>
+    <ul>
+      <li>Bring your own provider — the major hosted APIs, OpenAI-compatible endpoints, or a local Ollama or LM Studio.</li>
+      <li>Model Context Protocol support for third-party tools, with authentication and elicitation handled in the UI.</li>
+      <li>Skills and slash commands, built-in fetch, file and shell tools, and an installer agent that configures MCP servers for you.</li>
+      <li>Conversation search, drafts, and a local vector store for retrieval over your own material.</li>
+    </ul>
+    <p>MCP runtime: stdio MCP servers need a Node and uv runtime, which the app downloads on first use — with the versions and checksums it pins itself — into its own data directory inside the sandbox. That step needs network access; nothing is taken from the host.</p>
+    <p>Sandbox: display, GPU, network, audio, notifications, a system tray name and the Secret Service for credential storage. There is no filesystem grant — conversations and settings live in the app's own data directory, and attaching files goes through the desktop portal. To let the built-in file tools work on a directory of yours, grant it explicitly:</p>
+    <p>flatpak override --user --filesystem=~/Projects xyz.thinkinai.DeepChat</p>
+    <p>Replace the path with your own, repeat the flag for more directories, and undo everything with:</p>
+    <p>flatpak override --user --reset xyz.thinkinai.DeepChat</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>chat</keyword>
+    <keyword>llm</keyword>
+    <keyword>mcp</keyword>
+    <keyword>agent</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#2d8cf0</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>deepchat</binary>
+  </provides>
+  <launchable type="desktop-id">xyz.thinkinai.DeepChat.desktop</launchable>
+  <releases>
+    <release version="1.0.9" date="2026-07-10">
+      <url>https://github.com/ThinkInAIXYZ/deepchat/releases/tag/v1.0.9</url>
+    </release>
+  </releases>
+</component>
