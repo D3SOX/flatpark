@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ai.cchaha.ClaudeCodeHaha</id>
+  <name>Claude Code Haha</name>
+  <summary>Desktop workspace for running coding agents in parallel</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="ai.cchaha">
+    <name>NanmiCoder</name>
+  </developer>
+  <url type="homepage">https://cchaha.ai</url>
+  <url type="bugtracker">https://github.com/NanmiCoder/cc-haha/issues</url>
+  <url type="help">https://cchaha.ai</url>
+  <url type="vcs-browser">https://github.com/NanmiCoder/cc-haha</url>
+  <description>
+    <p>This is a community package of Claude Code Haha, maintained independently and unaffiliated with the project or its author. It repackages the official upstream Linux build unmodified.</p>
+    <p>Claude Code Haha is a desktop workspace for coding agents. It runs several agent sessions side by side, each optionally on its own git branch or worktree, and puts the review surface next to them: diffs, a built-in browser preview, and a permission dialog for every tool call the agent wants to make.</p>
+    <ul>
+      <li>Multi-session workspaces with branch and worktree launch, plus global search across sessions.</li>
+      <li>Diff review and browser preview beside the conversation.</li>
+      <li>GUI approval for agent tool calls, and a model trace for what the agent actually did.</li>
+      <li>Bring your own model — Claude, ChatGPT, Grok, presets, or a local endpoint.</li>
+      <li>Visual managers for MCP servers and subagents, and a skill marketplace.</li>
+    </ul>
+    <p>The upstream build is self-contained: its agent engine and the ripgrep binary it uses for file search are bundled, so this package needs no Node.js, Python or agent CLI on the host, and is granted no access to host commands.</p>
+    <p>Sandbox: display, GPU, network, notifications and the Secret Service for credential storage — and no filesystem grant at all. Sessions, skills, MCP servers and provider settings live in the app's own sandboxed data directory, so they persist across restarts without any host directory being opened.</p>
+    <p>That also means the app can see no project directories out of the box. To open real projects, grant the directories you want it to have, for example:</p>
+    <p>flatpak override --user --filesystem=~/Projects ai.cchaha.ClaudeCodeHaha</p>
+    <p>To share one config directory with other Claude Code tooling on the machine instead of keeping a separate one, grant that directory and point the app at it:</p>
+    <p>flatpak override --user --filesystem=~/.claude:create --env=CLAUDE_CONFIG_DIR=/home/YOU/.claude ai.cchaha.ClaudeCodeHaha</p>
+    <p>Replace the paths with your own, repeat the filesystem flag for more directories, and undo everything with:</p>
+    <p>flatpak override --user --reset ai.cchaha.ClaudeCodeHaha</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>agent</keyword>
+    <keyword>coding</keyword>
+    <keyword>llm</keyword>
+    <keyword>mcp</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#d97757</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">1024</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>cchaha</binary>
+  </provides>
+  <launchable type="desktop-id">ai.cchaha.ClaudeCodeHaha.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/NanmiCoder/cc-haha/main/docs/images/app/en/session-main.webp</image>
+      <caption>An agent session with the conversation and tool calls</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/NanmiCoder/cc-haha/main/docs/images/app/en/workspace-diff.webp</image>
+      <caption>Reviewing the diff an agent produced</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/NanmiCoder/cc-haha/main/docs/images/app/en/session-new.webp</image>
+      <caption>Starting a session on a branch or worktree</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/NanmiCoder/cc-haha/main/docs/images/app/en/skill-market.webp</image>
+      <caption>Skill marketplace</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.5.3" date="2026-08-04">
+      <url>https://github.com/NanmiCoder/cc-haha/releases/tag/v0.5.3</url>
+    </release>
+  </releases>
+</component>

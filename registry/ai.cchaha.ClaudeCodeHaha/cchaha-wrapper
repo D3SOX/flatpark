@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+
+# Claude Code Haha is an Electron app staged by apply_extra to
+# /app/extra/cc-haha. Run it through zypak-wrapper (from
+# org.electronjs.Electron2.BaseApp): zypak redirects Chromium's SUID sandbox
+# onto the Flatpak sandbox, so the app keeps an internal sandbox rather than
+# running with --no-sandbox. --ozone-platform-hint=auto lets Chromium use
+# Wayland when available and fall back to X11.
+#
+# The agent engine and the ripgrep binary the app uses for file search are
+# bundled in the upstream build, so nothing here reaches for a host toolchain.
+# Flatpak redirects the XDG base directories, so sessions and settings stay
+# inside the sandbox.
+#
+# Defensively clear ELECTRON_RUN_AS_NODE: if it leaks in from the launching
+# environment (e.g. a terminal inside VS Code/Electron), the binary would start
+# as plain Node instead of the GUI app.
+unset ELECTRON_RUN_AS_NODE
+
+# The app keeps its sessions, skills, MCP servers and provider settings in the
+# Claude Code config directory, which defaults to ~/.claude — under $HOME rather
+# than under the XDG base directories Flatpak redirects, and $HOME here is a
+# tmpfs, so that default would be discarded at every exit. CLAUDE_CONFIG_DIR is
+# the app's own knob for that location; point it inside the per-app data
+# directory, which persists and needs no filesystem grant.
+#
+# Assigned only when unset, so `flatpak override --env=CLAUDE_CONFIG_DIR=...`
+# (paired with a --filesystem grant for that path) can point the app at a
+# directory shared with other Claude Code tooling instead.
+: "${CLAUDE_CONFIG_DIR:=${XDG_DATA_HOME:-$HOME/.local/share}/claude}"
+export CLAUDE_CONFIG_DIR
+
+# apply_extra resolves the launcher's upstream name from the .deb's own .desktop
+# file and records it next to the app tree, so an upstream rename does not need
+# a change here.
+launcher="$(cat /app/extra/launcher 2>/dev/null || true)"
+[ -n "$launcher" ] || launcher=claude-code-desktop
+exec zypak-wrapper "/app/extra/cc-haha/$launcher" --ozone-platform-hint=auto "$@"
