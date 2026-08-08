@@ -1,5 +1,8 @@
 ---
+import { getLangFromUrl, useTranslations } from '../i18n';
 const { rows = [], permissions = [] } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const dot = {
   safe: 'bg-emerald-500',
   info: 'bg-slate-400',
@@ -15,7 +18,7 @@ const sensitive = permissions.filter((p) => p.level === 'warning' || p.level ===
   {
     rows.length > 0 && (
       <div>
-        <h2 class="text-base font-bold">Details</h2>
+        <h2 class="text-base font-bold">{t('panel.details')}</h2>
         <dl class="mt-3 flex flex-col gap-3 text-sm">
           {rows.map((row) => (
             <div class="flex items-baseline justify-between gap-4">
@@ -38,16 +41,16 @@ const sensitive = permissions.filter((p) => p.level === 'warning' || p.level ===
 
   <div class={rows.length > 0 ? 'border-t border-line pt-5' : ''}>
     <div class="flex items-center justify-between">
-      <h2 class="text-base font-bold">Permissions</h2>
+      <h2 class="text-base font-bold">{t('panel.permissions')}</h2>
       {
         permissions.length > 0 && (
-          <span class="chip">{sensitive > 0 ? `${sensitive} to review` : 'Minimal'}</span>
+          <span class="chip">{sensitive > 0 ? t('panel.review', { n: sensitive }) : t('panel.minimal')}</span>
         )
       }
     </div>
     {
       sorted.length === 0 ? (
-        <p class="mt-2 text-sm text-muted">No special permissions declared — fully sandboxed.</p>
+        <p class="mt-2 text-sm text-muted">{t('panel.none')}</p>
       ) : (
         <ul class="mt-3 flex flex-col gap-3">
           {sorted.map((p) => (

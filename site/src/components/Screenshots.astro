@@ -1,5 +1,8 @@
 ---
+import { getLangFromUrl, useTranslations } from '../i18n';
 const { screenshots = [] } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 {
@@ -28,7 +31,7 @@ const { screenshots = [] } = Astro.props;
           <button
             type="button"
             data-dot
-            aria-label={`Screenshot ${i + 1}`}
+            aria-label={t('screenshots.dot', { n: i + 1 })}
             class={`h-2.5 w-2.5 rounded-full transition ${i === 0 ? 'bg-brand' : 'bg-line'}`}
           />
         ))}

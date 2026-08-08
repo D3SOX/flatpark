@@ -5,9 +5,13 @@ import Featured from '../../components/Featured.astro';
 import AppCard from '../../components/AppCard.astro';
 import { loadApps, loadCatalog } from '../../lib/data.mjs';
 import { localeOnlyPaths } from '../../i18n/paths.mjs';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 // Same page in every locale; the chrome around it is what differs.
 export const getStaticPaths = localeOnlyPaths;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 const { repo } = loadCatalog();
 const apps = loadApps();
@@ -17,7 +21,7 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
 
 <Base
   title={repo.title}
-  description="FlatPark is a community hub for official Linux desktop apps, packaged as signed, sandboxed Flatpaks and installed with one command."
+  description={t('home.meta.description')}
 >
   <Topbar repo={repo} />
   <main>
@@ -25,23 +29,12 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
     <section class="mx-auto max-w-6xl px-5 pt-10 pb-4">
       <div class="grid items-center gap-8 lg:grid-cols-2">
         <div>
-          <span class="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-sm font-semibold text-brand">
-            ⬡ A signed Flatpak remote
-          </span>
-          <h1 class="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">
-            Your apps. <span class="text-brand">Sandboxed.</span> Signed.
-          </h1>
-          <p class="mt-4 max-w-md text-lg text-muted">
-            A community hub for official Linux desktop apps — packaged as signed,
-            sandboxed Flatpaks and installed with a single command.
-          </p>
+          <span class="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-sm font-semibold text-brand">{t('home.hero.badge')}</span>
+          <h1 class="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">{t('home.hero.title.lead')} <span class="text-brand">{t('home.hero.title.middle')}</span> {t('home.hero.title.tail')}</h1>
+          <p class="mt-4 max-w-md text-lg text-muted">{t('home.hero.body')}</p>
           <div class="mt-6 flex flex-wrap gap-3">
-            <a href="/apps/" class="inline-flex h-11 items-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">
-              Browse by category →
-            </a>
-            <a href="/setup/" class="inline-flex h-11 items-center rounded-full border border-line bg-surface px-6 text-sm font-semibold transition hover:border-brand">
-              Setup guide
-            </a>
+            <a href={localizePath('/apps/', lang)} class="inline-flex h-11 items-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">{t('home.hero.browse')}</a>
+            <a href={localizePath('/setup/', lang)} class="inline-flex h-11 items-center rounded-full border border-line bg-surface px-6 text-sm font-semibold transition hover:border-brand">{t('home.hero.setup')}</a>
           </div>
         </div>
         <Featured apps={apps} />
@@ -51,16 +44,16 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
     <!-- catalog -->
     <section id="apps" class="mx-auto max-w-6xl px-5 pb-12">
       <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
-        <h2 class="text-lg font-bold">All apps</h2>
+        <h2 class="text-lg font-bold">{t('apps.all')}</h2>
         <div class="flex items-center gap-3">
           <select
             data-sort
-            aria-label="Sort apps"
+            aria-label={t('apps.sort.label')}
             class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
           >
-            <option value="updated" selected>Sort: Recently updated</option>
-            <option value="approved">Sort: Developer-approved</option>
-            <option value="name">Sort: Name (A–Z)</option>
+            <option value="updated" selected>{t('apps.sort.recent')}</option>
+            <option value="approved">{t('apps.sort.approved')}</option>
+            <option value="name">{t('apps.sort.name')}</option>
           </select>
         </div>
       </div>
@@ -73,8 +66,8 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
         data-empty
         hidden
       >
-        <h2 class="font-bold text-ink">No matching apps</h2>
-        <p>Try a different search.</p>
+        <h2 class="font-bold text-ink">{t('home.empty.title')}</h2>
+        <p>{t('home.empty.body')}</p>
       </div>
     </section>
   </main>

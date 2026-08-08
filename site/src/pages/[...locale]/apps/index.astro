@@ -4,9 +4,13 @@ import Topbar from '../../../components/Topbar.astro';
 import AppCard from '../../../components/AppCard.astro';
 import { loadApps, loadCatalog } from '../../../lib/data.mjs';
 import { localeOnlyPaths } from '../../../i18n/paths.mjs';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
 
 // Same page in every locale; the chrome around it is what differs.
 export const getStaticPaths = localeOnlyPaths;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 const { repo } = loadCatalog();
 const apps = loadApps();
@@ -21,16 +25,16 @@ for (const a of apps) {
 const sections = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
 ---
 
-<Base title={`Browse apps — ${repo.title}`} description={`Browse all ${apps.length} apps on ${repo.title} by category.`}>
+<Base title={t('apps.title', { repo: repo.title })} description={t('apps.meta.description', { count: apps.length, repo: repo.title })}>
   <Topbar repo={repo} />
   <main class="mx-auto max-w-6xl px-5 py-8">
     <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
       <!-- category sidebar -->
       <aside class="lg:sticky lg:top-20 lg:self-start">
-        <p class="px-3 pb-2 text-[11px] font-extrabold tracking-widest text-muted uppercase">Browse</p>
+        <p class="px-3 pb-2 text-[11px] font-extrabold tracking-widest text-muted uppercase">{t('apps.sidebar.browse')}</p>
         <nav class="flex flex-wrap gap-2 lg:flex-col lg:gap-0.5" data-sections>
           <button class="seg-side is-active" data-section-filter="">
-            <span>All</span><b>{apps.length}</b>
+            <span>{t('apps.sidebar.all')}</span><b>{apps.length}</b>
           </button>
           {sections.map(([name, n]) => (
             <button class="seg-side" data-section-filter={name}>
@@ -43,15 +47,15 @@ const sections = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]))
       <!-- catalog -->
       <div>
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <h1 class="text-xl font-extrabold tracking-tight">All apps</h1>
+          <h1 class="text-xl font-extrabold tracking-tight">{t('apps.all')}</h1>
           <select
             data-sort
-            aria-label="Sort apps"
+            aria-label={t('apps.sort.label')}
             class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
           >
-            <option value="updated" selected>Sort: Recently updated</option>
-            <option value="approved">Sort: Developer-approved</option>
-            <option value="name">Sort: Name (A–Z)</option>
+            <option value="updated" selected>{t('apps.sort.recent')}</option>
+            <option value="approved">{t('apps.sort.approved')}</option>
+            <option value="name">{t('apps.sort.name')}</option>
           </select>
         </div>
 
@@ -63,8 +67,8 @@ const sections = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]))
           data-empty
           hidden
         >
-          <h2 class="font-bold text-ink">No matching apps</h2>
-          <p>Try a different search or category.</p>
+          <h2 class="font-bold text-ink">{t('apps.empty.title')}</h2>
+          <p>{t('apps.empty.body')}</p>
         </div>
       </div>
     </div>

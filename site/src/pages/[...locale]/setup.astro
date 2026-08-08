@@ -3,60 +3,62 @@ import Base from '../../layouts/Base.astro';
 import Topbar from '../../components/Topbar.astro';
 import { loadCatalog } from '../../lib/data.mjs';
 import { localeOnlyPaths } from '../../i18n/paths.mjs';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 // Same page in every locale; the chrome around it is what differs.
 export const getStaticPaths = localeOnlyPaths;
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
 const { repo } = loadCatalog();
 
 const scopes = [
-  { id: 'user', label: 'Per-user', flag: '--user ' },
-  { id: 'system', label: 'System-wide', flag: '' },
+  { id: 'user', label: t('setup.scope.user'), flag: '--user ' },
+  { id: 'system', label: t('setup.scope.system'), flag: '' },
 ];
 
 const buildSteps = (flag) => [
   {
-    title: `Add the ${repo.title} remote`,
-    body: `Registers the signed ${repo.title} repository. You only do this once.`,
+    title: t('setup.step.add_remote.title', { repo: repo.title }),
+    body: t('setup.step.add_remote.body', { repo: repo.title }),
     cmd: `flatpak ${flag}remote-add --if-not-exists ${repo.remoteName} ${repo.repoFileUrl}`,
   },
   {
-    title: 'Add Flathub for runtimes',
-    body: `${repo.title} apps build on the freedesktop runtime hosted on Flathub. Skip if you already have it.`,
+    title: t('setup.step.add_flathub.title'),
+    body: t('setup.step.add_flathub.body', { repo: repo.title }),
     cmd: `flatpak ${flag}remote-add --if-not-exists ${repo.runtimeRemoteName} ${repo.runtimeRepoUrl}`,
   },
   {
-    title: 'Install an app',
-    body: 'Or just press Install on any app page — it opens your software installer.',
+    title: t('setup.step.install.title'),
+    body: t('setup.step.install.body'),
     cmd: `flatpak ${flag}install ${repo.remoteName} <app-id>`,
   },
 ];
 ---
 
 <Base
-  title={`Set up — ${repo.title}`}
-  description={`Set up the ${repo.title} Flatpak remote and start installing signed apps in one command — per-user or system-wide, with Flathub for runtimes.`}
+  title={t('setup.title', { repo: repo.title })}
+  description={t('setup.meta', { repo: repo.title })}
 >
   <Topbar repo={repo} />
   <main class="mx-auto max-w-3xl px-5 py-12">
-    <a href="/" class="text-sm text-muted hover:text-ink">&larr; All apps</a>
-    <h1 class="mt-4 text-3xl font-extrabold tracking-tight">Set up {repo.title}</h1>
+    <a href={localizePath('/', lang)} class="text-sm text-muted hover:text-ink">&larr; {t('apps.all')}</a>
+    <h1 class="mt-4 text-3xl font-extrabold tracking-tight">{t('setup.heading', { repo: repo.title })}</h1>
     <p class="mt-3 max-w-2xl text-muted">
-      {repo.title} is a signed Flatpak remote. Add it once, then install any app from the catalog —
-      with the CLI or the Install button. The whole remote is signed with a single GPG key.
-    </p>
+      {t('setup.intro', { repo: repo.title })}</p>
 
     <div class="mt-6 rounded-xl border border-line bg-canvas p-4 text-sm text-muted">
-      <p class="font-semibold text-ink">Per-user or system-wide?</p>
+      <p class="font-semibold text-ink">{t('setup.scope.question')}</p>
       <ul class="mt-2 flex flex-col gap-1.5">
-        <li><span class="font-semibold text-ink">Per-user</span> — installs just for you, no admin needed.</li>
-        <li><span class="font-semibold text-ink">System-wide</span> — installs for everyone, asks for admin.</li>
+        <li><span class="font-semibold text-ink">{t('setup.scope.user')}</span>{t('setup.scope.user.desc')}</li>
+        <li><span class="font-semibold text-ink">{t('setup.scope.system')}</span>{t('setup.scope.system.desc')}</li>
       </ul>
-      <p class="mt-2">Keep both commands on the same tab — don't mix scopes. The commands update to match.</p>
+      <p class="mt-2" set:html={t('setup.scope.note')}></p>
     </div>
 
     <div data-tabs class="mt-8">
-      <div role="tablist" aria-label="Install scope" class="inline-flex gap-1 rounded-lg border border-line bg-surface p-1">
+      <div role="tablist" aria-label={t('setup.scope.aria')} class="inline-flex gap-1 rounded-lg border border-line bg-surface p-1">
         {
           scopes.map((scope, i) => (
             <button
@@ -86,7 +88,7 @@ const buildSteps = (flag) => [
                 <p class="mt-2 text-sm text-muted">{step.body}</p>
                 <div class="mt-3 flex items-center gap-2">
                   <code class="cmd flex-1">{step.cmd}</code>
-                  <button class="btn-ghost shrink-0" type="button" data-copy={step.cmd}>Copy</button>
+                  <button class="btn-ghost shrink-0" type="button" data-copy={step.cmd}>{t('action.copy')}</button>
                 </div>
               </li>
             ))}
@@ -95,9 +97,6 @@ const buildSteps = (flag) => [
       }
     </div>
 
-    <p class="mt-8 text-sm text-muted">
-      Verifying the key and browsing apps? Head back to the
-      <a class="text-brand hover:underline" href="/">catalog</a>.
-    </p>
+    <p class="mt-8 text-sm text-muted">{t('setup.outro.lead')}<a class="text-brand hover:underline" href={localizePath('/', lang)}>{t('setup.outro.catalog')}</a>{t('setup.outro.tail')}</p>
   </main>
 </Base>
