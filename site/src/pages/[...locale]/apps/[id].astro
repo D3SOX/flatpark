@@ -6,7 +6,7 @@ import InfoPanel from '../../../components/InfoPanel.astro';
 import ProseBlocks from '../../../components/ProseBlocks.astro';
 import { loadApps, loadCatalog } from '../../../lib/data.mjs';
 import { pathsForLocales } from '../../../i18n/paths.mjs';
-import { getLangFromUrl, localizePath, useTranslations } from '../../../i18n';
+import { getLangFromUrl, localizePath, sectionLabel, useTranslations } from '../../../i18n';
 
 export function getStaticPaths() {
   const { repo } = loadCatalog();
@@ -51,7 +51,7 @@ const ld = {
   '@type': 'SoftwareApplication',
   name: app.name,
   description: app.summary,
-  applicationCategory: app.section || app.category,
+  applicationCategory: sectionLabel(lang, app.section) || app.category,
   operatingSystem: 'Linux',
   url: pageUrl,
   ...(app.icon && Astro.site ? { image: new URL(app.icon, Astro.site).href } : {}),
@@ -160,7 +160,7 @@ const ld = {
       </div>
 
       <div class="mt-5 flex flex-wrap gap-2">
-        <span class="chip">{app.section || app.category}</span>
+        <span class="chip">{sectionLabel(lang, app.section) || app.category}</span>
         {app.license ? <span class="chip">{app.license.label}</span> : null}
         {latest ? <span class="chip">v{latest.version}</span> : null}
       </div>

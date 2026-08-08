@@ -1,5 +1,5 @@
 ---
-import { getLangFromUrl, useTranslations } from '../i18n';
+import { getLangFromUrl, permissionText, useTranslations } from '../i18n';
 const { rows = [], permissions = [] } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -10,7 +10,9 @@ const dot = {
   warning: 'bg-red-500',
 };
 const order = { warning: 0, caution: 1, info: 2, safe: 3 };
-const sorted = [...permissions].sort((a, b) => (order[a.level] ?? 2) - (order[b.level] ?? 2));
+const sorted = [...permissions]
+  .sort((a, b) => (order[a.level] ?? 2) - (order[b.level] ?? 2))
+  .map((p) => ({ ...p, ...permissionText(lang, p) }));
 const sensitive = permissions.filter((p) => p.level === 'warning' || p.level === 'caution').length;
 ---
 

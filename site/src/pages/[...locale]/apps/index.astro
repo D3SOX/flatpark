@@ -4,7 +4,7 @@ import Topbar from '../../../components/Topbar.astro';
 import AppCard from '../../../components/AppCard.astro';
 import { loadApps, loadCatalog } from '../../../lib/data.mjs';
 import { localeOnlyPaths } from '../../../i18n/paths.mjs';
-import { getLangFromUrl, useTranslations } from '../../../i18n';
+import { getLangFromUrl, useTranslations, sectionLabel } from '../../../i18n';
 
 // Same page in every locale; the chrome around it is what differs.
 export const getStaticPaths = localeOnlyPaths;
@@ -16,13 +16,18 @@ const { repo } = loadCatalog();
 const apps = loadApps();
 const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
 
-// Curated sections present in the catalog, with counts, for the sidebar.
+// Curated sections present in the catalog, with counts, for the sidebar. The
+// slug drives the filter (and stays out of the reader's language); the label is
+// what gets shown, and sorting follows the label so the list reads in
+// alphabetical order in whichever language that is.
 const counts = {};
 for (const a of apps) {
-  const s = a.section || 'Utilities';
+  const s = a.section || 'utilities';
   counts[s] = (counts[s] || 0) + 1;
 }
-const sections = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
+const sections = Object.entries(counts)
+  .map(([slug, n]) => ({ slug, n, label: sectionLabel(lang, slug) }))
+  .sort((a, b) => a.label.localeCompare(b.label, lang));
 ---
 
 <Base title={t('apps.title', { repo: repo.title })} description={t('apps.meta.description', { count: apps.length, repo: repo.title })}>
@@ -36,9 +41,9 @@ const sections = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]))
           <button class="seg-side is-active" data-section-filter="">
             <span>{t('apps.sidebar.all')}</span><b>{apps.length}</b>
           </button>
-          {sections.map(([name, n]) => (
-            <button class="seg-side" data-section-filter={name}>
-              <span>{name}</span><b>{n}</b>
+          {sections.map((s) => (
+            <button class="seg-side" data-section-filter={s.slug}>
+              <span>{s.label}</span><b>{s.n}</b>
             </button>
           ))}
         </nav>

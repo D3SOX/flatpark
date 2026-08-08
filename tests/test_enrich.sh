@@ -98,6 +98,13 @@ assert_contains "$out" "\"text\": \"Optional cap: \""
 assert_contains "$out" "\"version\": \"1.0\""
 assert_contains "$out" "\"label\": \"MIT\""
 assert_contains "$out" "https://example.org/shot.png"
+# Permissions and sections are emitted as stable keys next to their English
+# text: the site translates the key and falls back to the text, so both have
+# to survive. A label without its key would silently pin the panel to English.
+assert_contains "$out" "\"key\": \"share.network\""
+assert_contains "$out" "\"key\": \"socket.wayland\""
+assert_contains "$out" "\"key\": \"device.dri\""
+assert_contains "$out" "\"section\": \"utilities\""
 # AppStream ships translations inline as xml:lang siblings. FlatPark renders
 # app content in the source language, so every one of them must be absent: a
 # leaked translated <p> concatenates onto the English prose, and a translated

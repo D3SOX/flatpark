@@ -1,12 +1,17 @@
 ---
-import { defaultLang, getLangFromUrl, localizePath, useTranslations } from '../i18n';
+import { defaultLang, getLangFromUrl, localizePath, useTranslations, sectionLabel } from '../i18n';
 const { app } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const tags = app.tags ?? [];
-const section = app.section || app.category || 'Utilities';
+// The slug is what data-section carries (the client filter matches on it);
+// sectionLabel is only what the reader sees.
+const section = app.section || app.category || 'utilities';
+const sectionText = sectionLabel(lang, section);
 const fallback = (app.name.match(/[A-Za-z0-9]/g) ?? []).slice(0, 2).join('').toUpperCase();
-const search = [app.id, app.name, app.summary, app.category, section, tags.join(' ')]
+// sectionText joins the haystack too, so searching the visible category name
+// works in whatever language the reader sees it in.
+const search = [app.id, app.name, app.summary, app.category, section, sectionText, tags.join(' ')]
   .join(' ')
   .toLowerCase();
 
@@ -75,7 +80,7 @@ const updatedLabel = ago(app.updated);
     </h3>
     <p class="line-clamp-2 text-sm text-muted">{app.summary}</p>
     <div class="mt-2 flex flex-wrap items-center gap-2">
-      <span class="chip chip-mode">{section}</span>
+      <span class="chip chip-mode">{sectionText}</span>
       {updatedLabel && <span class="text-xs text-muted">{t('appcard.updated', { label: updatedLabel })}</span>}
     </div>
   </div>

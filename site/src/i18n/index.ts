@@ -49,6 +49,48 @@ export function stripLang(pathname: string): string {
  * partially translated locale still renders; a key missing everywhere renders
  * as itself, which is loud enough to catch in review.
  */
+/**
+ * Label for a catalog section. `enrich.mjs` bakes a stable slug into the app
+ * JSON — the client-side category filter matches on it — and the display text
+ * is resolved here so it follows the reader's language.
+ */
+export function sectionLabel(lang: Lang, slug: string | undefined | null): string {
+  if (!slug) return '';
+  const t = useTranslations(lang);
+  const key = `section.${slug}`;
+  const label = t(key);
+  // An unmapped slug renders as itself rather than as `section.<slug>`.
+  return label === key ? slug : label;
+}
+
+/**
+ * Label + detail for one sandbox permission. `enrich.mjs` emits a `key` for the
+ * ones it recognises alongside the English `label`/`detail`; anything it could
+ * not classify carries no key and falls back to the English text it baked in.
+ */
+export function permissionText(
+  lang: Lang,
+  perm: { key?: string; label?: string; detail?: string; value?: string; flag?: string; readOnly?: boolean },
+): { label: string; detail: string } {
+  const t = useTranslations(lang);
+  const vars = { value: perm.value ?? '', flag: perm.flag ?? '' };
+  const resolve = (key: string) => {
+    const out = t(key, vars);
+    return out === key ? null : out; // `t` echoes the key when nothing matches
+  };
+  const translated = perm.key ? resolve(`perm.${perm.key}`) : null;
+  // Only wrap what we actually translated: the baked English label already
+  // carries its own "(read-only)", so wrapping the fallback would double it.
+  const label =
+    translated === null
+      ? (perm.label ?? '')
+      : perm.readOnly
+        ? t('perm.read_only', { label: translated })
+        : translated;
+  const detail = (perm.key ? resolve(`perm.${perm.key}.detail`) : null) ?? perm.detail ?? '';
+  return { label, detail };
+}
+
 export function useTranslations(lang: Lang) {
   const dict = dictionaries[lang] ?? dictionaries[defaultLang as Lang];
   const base = dictionaries[defaultLang as Lang];
