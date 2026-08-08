@@ -1,0 +1,25 @@
+---
+// Render the ordered blocks enrich.mjs parses out of an AppStream
+// <description> — { type: 'p', runs } and { type: 'list', items } — used for
+// both the About prose and a release's notes.
+const { blocks = [] } = Astro.props;
+
+// Inline <code> runs sit on the canvas background, so the chip uses surface + a
+// border to read as a distinct code token, and breaks rather than overflowing.
+const codeRun =
+  'rounded-md border border-line bg-surface px-1.5 py-0.5 font-mono text-[13px] text-ink break-words';
+---
+
+{
+  blocks.map((block) =>
+    block.type === 'list' ? (
+      <ul class="list-disc pl-5">
+        {block.items.map((item) => (
+          <li>{item.map((run) => ('code' in run ? <code class={codeRun}>{run.code}</code> : run.text))}</li>
+        ))}
+      </ul>
+    ) : (
+      <p>{block.runs.map((run) => ('code' in run ? <code class={codeRun}>{run.code}</code> : run.text))}</p>
+    ),
+  )
+}

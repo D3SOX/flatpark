@@ -26,12 +26,20 @@ modules:
       # END MANAGED EXTRA-DATA
 EOF
 }
+# A complete component, not a stub: the release-writing path is expected to
+# leave a valid metainfo valid, and case 5 asserts exactly that.
 mk_metainfo() { # <version>
 cat > "$tmp/app.metainfo.xml" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.flatpark.Up</id>
+  <id>io.flatpark.up</id>
   <name>Up</name>
+  <summary>A fixture component for the update-pins tests</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description><p>A fixture component used by the update-pins tests to exercise the release-writing path end to end.</p></description>
+  <url type="homepage">https://flatpark.org</url>
+  <launchable type="desktop-id">io.flatpark.up.desktop</launchable>
   <releases>
     <release version="$1" date="2026-01-01" />
   </releases>
@@ -59,7 +67,10 @@ assert_eq "$OUT" "2.0"
 assert_contains "$tmp/manifest.yml" "url: file://$tmp/new.bin"
 assert_contains "$tmp/manifest.yml" "sha256: $new_sha"
 assert_contains "$tmp/manifest.yml" "size: $new_size"
-assert_contains "$tmp/app.metainfo.xml" "<release version=\"2.0\" date=\"2026-02-02\" />"
+assert_contains "$tmp/app.metainfo.xml" "<release version=\"2.0\" date=\"2026-02-02\">"
+# No notes supplied -> an empty <description>, i.e. a slot a human can still
+# fill in, rather than a self-closing tag with nowhere to put anything.
+assert_contains "$tmp/app.metainfo.xml" "<description></description>"
 # the new release must be first (newest-first), old one retained
 first_ver="$(grep -oE 'release version="[^"]*"' "$tmp/app.metainfo.xml" | head -1)"
 assert_eq "$first_ver" 'release version="2.0"'
@@ -68,5 +79,26 @@ assert_contains "$tmp/app.metainfo.xml" "<release version=\"1.0\""
 # 3) re-running the same resolver is now a no-op (anchor moved to 2.0).
 run "$(printf '{"version":"2.0","releaseDate":"2026-02-02","sources":[{"filename":"app.bin","url":"file://%s/new.bin"}]}' "$tmp")"
 assert_eq "$RC" "10"
+
+# 4) releaseUrl -> <url type="details">; releaseNotes written through verbatim.
+run "$(printf '{"version":"3.0","releaseDate":"2026-03-03","sources":[{"filename":"app.bin","url":"file://%s/new.bin"}],"releaseUrl":"https://example.org/r/3.0","releaseNotes":"<p>Fixed:</p>\\n<ul>\\n  <li>A &amp; B</li>\\n</ul>"}' "$tmp")"
+assert_eq "$RC" "0"
+assert_contains "$tmp/app.metainfo.xml" '<url type="details">https://example.org/r/3.0</url>'
+assert_contains "$tmp/app.metainfo.xml" "<p>Fixed:</p>"
+assert_contains "$tmp/app.metainfo.xml" "<li>A &amp; B</li>"
+
+# 5) notes that AppStream rejects are dropped; the release (and its details
+#    link) still lands, so a bad upstream fragment can never block an update.
+#    Needs the validator — without it the guard is a documented no-op.
+if command -v appstreamcli >/dev/null 2>&1; then
+  run "$(printf '{"version":"4.0","releaseDate":"2026-04-04","sources":[{"filename":"app.bin","url":"file://%s/new.bin"}],"releaseUrl":"https://example.org/r/4.0","releaseNotes":"<h2>nope</h2><p>unclosed"}' "$tmp")"
+  assert_eq "$RC" "0"
+  assert_contains "$tmp/app.metainfo.xml" '<release version="4.0" date="2026-04-04">'
+  assert_contains "$tmp/app.metainfo.xml" '<url type="details">https://example.org/r/4.0</url>'
+  grep -q '<h2>nope</h2>' "$tmp/app.metainfo.xml" && {
+    echo "FAIL: invalid releaseNotes were written through"; exit 1; }
+  appstreamcli validate "$tmp/app.metainfo.xml" >/dev/null 2>&1 \
+    || { echo "FAIL: metainfo does not validate after the update"; exit 1; }
+fi
 
 echo "test_update_pins: PASS"

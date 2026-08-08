@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Topbar from '../../components/Topbar.astro';
 import Screenshots from '../../components/Screenshots.astro';
 import InfoPanel from '../../components/InfoPanel.astro';
+import ProseBlocks from '../../components/ProseBlocks.astro';
 import { loadApps, loadCatalog } from '../../lib/data.mjs';
 
 export function getStaticPaths() {
@@ -30,11 +31,12 @@ const detailRows = [
 
 const hasShots = (app.screenshots?.length ?? 0) > 0;
 
-// Inline <code> runs inside the About prose (e.g. a flatpak-override command).
-// The About text sits on the canvas background, so the chip uses surface + a
-// border to read as a distinct code token, and breaks rather than overflowing.
-const codeRun =
-  'rounded-md border border-line bg-surface px-1.5 py-0.5 font-mono text-[13px] text-ink break-words';
+// Release notes are upstream's own words, carried through only when upstream
+// publishes them in a form we can use — FlatPark repackages, it does not write
+// changelogs. With neither notes nor a link there is nothing to show, so the
+// section drops out entirely rather than announcing an absence.
+const hasNotes = (latest?.notes?.length ?? 0) > 0;
+const showWhatsNew = hasNotes || !!latest?.url;
 
 const pageUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
 const ld = {
@@ -170,23 +172,35 @@ const ld = {
           <div class="mt-3 flex flex-col gap-3 text-[15px] leading-relaxed text-ink/90">
             {
               app.description?.length > 0 ? (
-                app.description.map((block) =>
-                  block.type === 'list' ? (
-                    <ul class="list-disc pl-5">
-                      {block.items.map((item) => (
-                        <li>{item.map((run) => ('code' in run ? <code class={codeRun}>{run.code}</code> : run.text))}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>{block.runs.map((run) => ('code' in run ? <code class={codeRun}>{run.code}</code> : run.text))}</p>
-                  ),
-                )
+                <ProseBlocks blocks={app.description} />
               ) : (
                 <p class="text-muted">{app.summary}</p>
               )
             }
           </div>
         </div>
+
+        {
+          showWhatsNew && (
+            <div>
+              <div class="flex items-baseline gap-3">
+                <h2 class="text-lg font-bold">What's New</h2>
+                <span class="text-sm text-muted">
+                  v{latest.version}
+                  {latest.date ? ` · ${latest.date}` : ''}
+                </span>
+              </div>
+              <div class="mt-3 flex flex-col gap-3 text-[15px] leading-relaxed text-ink/90">
+                {hasNotes && <ProseBlocks blocks={latest.notes} />}
+                {latest.url && (
+                  <a class="text-sm text-brand hover:underline" href={latest.url} target="_blank" rel="noreferrer">
+                    {hasNotes ? 'Full release notes' : 'Release notes'} &rarr;
+                  </a>
+                )}
+              </div>
+            </div>
+          )
+        }
       </div>
       <InfoPanel rows={detailRows} permissions={app.permissions} />
     </section>
