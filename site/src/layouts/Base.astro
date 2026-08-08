@@ -1,13 +1,40 @@
 ---
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
+import { defaultLang, getLangFromUrl, languages, localizePath, locales, stripLang, useTranslations } from '../i18n';
 const { title, description, image, ogType = 'website' } = Astro.props;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
 const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) : null;
+
+// Every component reads its locale back off the page URL rather than taking it
+// as a prop, so a locale never has to be threaded down through the tree.
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// hreflang alternates: the same page in each locale, plus x-default pointing at
+// the unprefixed English one. Built from this page's own path with the locale
+// segment stripped, so it stays correct for every route without a per-page list.
+const basePath = stripLang(Astro.url.pathname);
+const alternates = Astro.site
+  ? locales.map((l) => ({
+      hreflang: languages[l].htmlLang,
+      href: new URL(localizePath(basePath, l), Astro.site).href,
+    }))
+  : [];
+const xDefault = Astro.site ? new URL(localizePath(basePath, defaultLang), Astro.site).href : null;
+
+// Strings the bundled client script needs. It cannot use `define:vars` (that is
+// inline-script only), so they ride along as JSON and are read back on boot.
+const clientStrings = {
+  copied: t('action.copied'),
+  copiedInstall: t('action.copied_install'),
+  copyFailed: t('action.copy_failed'),
+  install: t('action.install'),
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={languages[lang].htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,6 +51,8 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="theme-color" content="#3584e4" />
     <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
     <link rel="preload" href="/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
@@ -33,6 +62,10 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
     <meta property="og:title" content={title} />
     {description && <meta property="og:description" content={description} />}
     <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={languages[lang].ogLocale} />
+    {locales
+      .filter((l) => l !== lang)
+      .map((l) => <meta property="og:locale:alternate" content={languages[l].ogLocale} />)}
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title} />
@@ -45,7 +78,26 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
     <slot />
     <Footer />
 
+    <script type="application/json" data-i18n set:html={JSON.stringify(clientStrings)}></script>
+
     <script>
+      // Strings the script swaps in at runtime, handed over from the server by
+      // Base.astro (see clientStrings there). English is the fallback so a
+      // missing blob degrades to the pre-i18n behaviour instead of blanking.
+      const S = (() => {
+        const defaults = {
+          copied: 'Copied',
+          copiedInstall: 'Copied!',
+          copyFailed: 'Copy failed',
+          install: 'Install',
+        };
+        try {
+          return { ...defaults, ...JSON.parse(document.querySelector('[data-i18n]')?.textContent || '{}') };
+        } catch {
+          return defaults;
+        }
+      })();
+
       // Catalog search (index only; no-ops elsewhere) + copy buttons.
       // Dark/light toggle: flip the class, remember the choice.
       document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
@@ -143,9 +195,9 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
           const label = button.textContent;
           try {
             await navigator.clipboard.writeText(button.dataset.copy || '');
-            button.textContent = 'Copied';
+            button.textContent = S.copied;
           } catch {
-            button.textContent = 'Copy failed';
+            button.textContent = S.copyFailed;
           }
           setTimeout(() => {
             button.textContent = label;
@@ -244,7 +296,7 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
         const hint = root?.querySelector('[data-install-hint]');
         const menu = root?.querySelector('[data-install-menu]');
         const label = btn.querySelector('[data-install-label]');
-        const original = label?.textContent || 'Install';
+        const original = label?.textContent || S.install;
         let labelTimer, hintTimer;
         btn.addEventListener('click', async () => {
           let ok = true;
@@ -254,7 +306,7 @@ const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) :
             ok = false;
           }
           if (label) {
-            label.textContent = ok ? 'Copied!' : 'Copy failed';
+            label.textContent = ok ? S.copiedInstall : S.copyFailed;
             clearTimeout(labelTimer);
             labelTimer = setTimeout(() => { label.textContent = original; }, 1500);
           }

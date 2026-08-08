@@ -1,14 +1,18 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Topbar from '../../components/Topbar.astro';
-import Screenshots from '../../components/Screenshots.astro';
-import InfoPanel from '../../components/InfoPanel.astro';
-import ProseBlocks from '../../components/ProseBlocks.astro';
-import { loadApps, loadCatalog } from '../../lib/data.mjs';
+import Base from '../../../layouts/Base.astro';
+import Topbar from '../../../components/Topbar.astro';
+import Screenshots from '../../../components/Screenshots.astro';
+import InfoPanel from '../../../components/InfoPanel.astro';
+import ProseBlocks from '../../../components/ProseBlocks.astro';
+import { loadApps, loadCatalog } from '../../../lib/data.mjs';
+import { pathsForLocales } from '../../../i18n/paths.mjs';
 
 export function getStaticPaths() {
   const { repo } = loadCatalog();
-  return loadApps().map((app) => ({ params: { id: app.id }, props: { app, repo } }));
+  const apps = loadApps();
+  // App data itself is locale-independent for now — only the chrome around it
+  // is translated — so every locale gets the same entries.
+  return pathsForLocales(() => apps.map((app) => ({ params: { id: app.id }, props: { app, repo } })));
 }
 
 const { app, repo } = Astro.props;

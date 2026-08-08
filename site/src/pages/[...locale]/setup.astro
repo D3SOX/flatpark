@@ -1,7 +1,11 @@
 ---
-import Base from '../layouts/Base.astro';
-import Topbar from '../components/Topbar.astro';
-import { loadCatalog } from '../lib/data.mjs';
+import Base from '../../layouts/Base.astro';
+import Topbar from '../../components/Topbar.astro';
+import { loadCatalog } from '../../lib/data.mjs';
+import { localeOnlyPaths } from '../../i18n/paths.mjs';
+
+// Same page in every locale; the chrome around it is what differs.
+export const getStaticPaths = localeOnlyPaths;
 
 const { repo } = loadCatalog();
 

@@ -1,0 +1,26 @@
+{
+  "lang.switch": "Language",
+
+  "action.install": "Install",
+  "action.copied": "Copied",
+  "action.copied_install": "Copied!",
+  "action.copy_failed": "Copy failed",
+
+  "nav.setup": "Setup",
+  "nav.search": "Search apps",
+  "nav.theme_toggle": "Toggle dark mode",
+  "nav.github": "View source on GitHub",
+
+  "footer.group.Project": "Project",
+  "footer.group.Docs": "Docs",
+  "footer.group.Community": "Community",
+  "footer.group.Legal": "Legal",
+  "footer.github": "GitHub",
+  "footer.legal": "FlatPark · community Flatpak hub · packaged apps remain their vendors' property",
+
+  "notfound.title": "Page not found",
+  "notfound.meta": "This page does not exist.",
+  "notfound.body": "This page doesn't exist — the app may have been de-listed, or the address is mistyped.",
+  "notfound.browse": "Browse all apps",
+  "notfound.home": "Home"
+}

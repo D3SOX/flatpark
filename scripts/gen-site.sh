@@ -33,6 +33,15 @@ log "building site -> $PAGES_DIR"
 # Astro copies them into the published tree (fast local serving, no upstream
 # timeouts); only a failed fetch falls back to a hotlink.
 rm -f "$PAGES_DIR/apps/"*.json
+# Astro's 404.astro special case only fires at the pages root, so a locale's
+# not-found page lands at <locale>/404/index.html. Cloudflare Pages walks up
+# from a missing path looking for <dir>/404.html, so move it where Pages looks.
+for notfound in "$PAGES_DIR"/*/404/index.html; do
+    [ -e "$notfound" ] || continue
+    dir="$(dirname "$notfound")"
+    mv "$notfound" "$(dirname "$dir")/404.html"
+    rmdir "$dir"
+done
 # Astro's content layer leaves empty module stubs in the output root; they are
 # never linked from any page, so drop them from the published tree.
 rm -f "$PAGES_DIR/content-assets.mjs" "$PAGES_DIR/content-modules.mjs"
