@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Claude Code Haha
+Comment=Desktop workspace for running coding agents in parallel
+Exec=cchaha %U
+Icon=ai.cchaha.ClaudeCodeHaha
+Terminal=false
+Categories=Development;
+StartupWMClass=Claude Code Haha
+Keywords=ai;agent;coding;llm;mcp;claude;codex;

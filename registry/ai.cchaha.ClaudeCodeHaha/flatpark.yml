@@ -1,0 +1,23 @@
+id: ai.cchaha.ClaudeCodeHaha
+name: Claude Code Haha
+summary: Desktop workspace for running coding agents in parallel
+website: https://cchaha.ai
+source_url: https://github.com/NanmiCoder/cc-haha
+build:
+  manifest: ai.cchaha.ClaudeCodeHaha.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Agents
+    - MCP
+    - IDE
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
