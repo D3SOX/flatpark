@@ -1,0 +1,23 @@
+id: ai.thclaws.thClaws
+name: thClaws
+summary: Native AI agent workspace with chat, terminal and files
+website: https://thclaws.ai
+source_url: https://github.com/thClaws/thClaws
+build:
+  manifest: ai.thclaws.thClaws.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Agents
+    - MCP
+    - Terminal
+    - Rust
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []

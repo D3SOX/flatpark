@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ai.thclaws.thClaws</id>
+  <name>thClaws</name>
+  <summary>Native AI agent workspace with chat, terminal and files</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT OR Apache-2.0</project_license>
+  <developer id="ai.thclaws">
+    <name>thClaws (ThaiGPT Co., Ltd.)</name>
+  </developer>
+  <url type="homepage">https://thclaws.ai</url>
+  <url type="bugtracker">https://github.com/thClaws/thClaws/issues</url>
+  <url type="help">https://thclaws.ai/manual</url>
+  <url type="vcs-browser">https://github.com/thClaws/thClaws</url>
+  <description>
+    <p>This is a community package of thClaws, maintained independently and unaffiliated with thClaws or ThaiGPT Co., Ltd. It repackages the official upstream Linux build unmodified.</p>
+    <p>thClaws is an AI agent workspace written in Rust and shipped as a single binary. The desktop window puts Terminal, Chat and Files tabs around one agent loop, and the same binary also runs as an interactive CLI, a one-shot non-interactive command, or a local web surface.</p>
+    <ul>
+      <li>Bring your own provider — Anthropic, OpenAI, Gemini, DeepSeek, Qwen, OpenRouter, Azure AI Foundry, or an OpenAI-compatible endpoint; Ollama and LM Studio keep everything on your own machine.</li>
+      <li>Open extension points: Model Context Protocol servers, SKILL.md skills, plugins, hooks and AGENTS.md project instructions.</li>
+      <li>Plan mode, subagents and multi-agent teams for work that takes more than one turn.</li>
+      <li>Markdown knowledge bases and a persistent memory store you can read, edit and commit.</li>
+      <li>Scheduled and long-running jobs, plus session resume from plain JSONL transcripts.</li>
+    </ul>
+    <p>Sandbox: this package ships a tight default — display, GPU, network and the Secret Service for API-key storage. It grants no host command access, so the agent's shell and file tools act inside the sandbox.</p>
+    <p>Because of that, the only directory thClaws can see out of the box is its own sandboxed home. To let it work on real projects, grant the directories you want it to have, for example:</p>
+    <p>flatpak override --user --filesystem=~/Projects ai.thclaws.thClaws</p>
+    <p>Replace the path with your own, repeat the flag for more directories, and undo everything with:</p>
+    <p>flatpak override --user --reset ai.thclaws.thClaws</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>agent</keyword>
+    <keyword>assistant</keyword>
+    <keyword>llm</keyword>
+    <keyword>mcp</keyword>
+    <keyword>terminal</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#12b5cb</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>thclaws</binary>
+  </provides>
+  <launchable type="desktop-id">ai.thclaws.thClaws.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/thClaws/thClaws/main/docs/img/screen-chat.webp</image>
+      <caption>Chat tab with the agent loop and tool calls</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/thClaws/thClaws/main/docs/img/screen-terminal.webp</image>
+      <caption>Terminal tab</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/thClaws/thClaws/main/docs/img/screen-files.webp</image>
+      <caption>Files tab</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.109.0" date="2026-08-03">
+      <url>https://github.com/thClaws/thClaws/releases/tag/v0.109.0</url>
+    </release>
+  </releases>
+</component>

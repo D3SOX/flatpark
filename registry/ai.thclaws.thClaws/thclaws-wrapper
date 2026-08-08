@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+
+# /app/extra/thclaws/thclaws is the upstream single-binary build staged by
+# apply_extra. It is a Tauri-style WebKitGTK application and links only against
+# libraries org.gnome.Platform 50 provides (webkit2gtk-4.1, javascriptcoregtk,
+# gtk-3, gdk-3, libsoup-3, cairo, gdk-pixbuf, glib/gio/gobject, wayland-client,
+# dbus-1).
+#
+# Launched with no arguments the binary opens its desktop GUI; --cli, -p and
+# --serve select the terminal REPL, the one-shot mode and the web surface, and
+# all of them stay reachable through `flatpak run`. Arguments are forwarded
+# unchanged.
+#
+# Flatpak redirects the XDG base directories into the per-app data dir, so
+# settings, sessions and the knowledge base under ~/.config/thclaws and
+# ~/.local/share/thclaws stay inside the sandbox.
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside
+# the Flatpak sandbox; the compositing path is the reliable default here.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+# thClaws looks along PATH for other copies of itself and reports the ones it
+# finds. /app/bin holds only this wrapper (named `thclaws` so that `flatpak run
+# --command=thclaws` and the desktop entry read naturally) and the install-time
+# apply_extra script, so leaving it on PATH makes the app report its own
+# launcher as a second installation. Drop that one entry; nothing at runtime
+# resolves out of /app/bin.
+newpath=""
+oldifs="${IFS-}"
+IFS=:
+for dir in $PATH; do
+  [ "$dir" = /app/bin ] && continue
+  newpath="${newpath:+$newpath:}$dir"
+done
+IFS="$oldifs"
+export PATH="$newpath"
+
+exec /app/extra/thclaws/thclaws "$@"

@@ -1,0 +1,60 @@
+id: ai.thclaws.thClaws
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: thclaws
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Single-binary Rust agent workspace with a WebKitGTK window. The GTK3,
+  # WebKitGTK 4.1, libsoup-3, cairo, gdk-pixbuf, glib and wayland stacks it
+  # links come from org.gnome.Platform 50 — verified against the binary's
+  # NEEDED set, 0 missing.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Hardware-accelerated WebKit rendering.
+  - --device=dri
+  # Talks to the model providers over HTTPS, and to a local Ollama or LM Studio
+  # over the loopback interface. The optional --serve surface also listens here.
+  - --share=network
+  # thClaws stores provider API keys in the OS keyring through the Secret
+  # Service when one is present, falling back to a file in its own config
+  # directory when it is not.
+  - --talk-name=org.freedesktop.secrets
+  # No standing filesystem grant. thClaws works inside a project directory, and
+  # by default the only directory it can see is its own sandboxed home, so a
+  # user who wants it to work on real code opts in explicitly — the metainfo
+  # carries the exact `flatpak override` commands. Nothing here reaches host
+  # commands either: the package grants no org.freedesktop.Flatpak access, so
+  # the agent's shell tools run against the sandbox, not the host.
+modules:
+  - name: thclaws
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 thclaws-wrapper /app/bin/thclaws
+      - install -Dm644 ai.thclaws.thClaws.desktop /app/share/applications/ai.thclaws.thClaws.desktop
+      - install -Dm644 ai.thclaws.thClaws.metainfo.xml /app/share/metainfo/ai.thclaws.thClaws.metainfo.xml
+      - install -Dm644 ai.thclaws.thClaws.png /app/share/icons/hicolor/512x512/apps/ai.thclaws.thClaws.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: thclaws.tar.gz
+        only-arches:
+          - x86_64
+        url: https://github.com/thClaws/thClaws/releases/download/v0.109.0/thclaws-v0.109.0-x86_64-unknown-linux-gnu.tar.gz
+        sha256: 3ee7a645c4fc1a0bf62b9211e5461bde0a69434ce207ffcffa954c09ba12a7f3
+        size: 30185550
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: thclaws-wrapper
+      - type: file
+        path: ai.thclaws.thClaws.desktop
+      - type: file
+        path: ai.thclaws.thClaws.metainfo.xml
+      - type: file
+        path: ai.thclaws.thClaws.png
