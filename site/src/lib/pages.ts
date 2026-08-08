@@ -6,15 +6,22 @@
 // URL, which is what Flathub does and what keeps the footer, the hreflang set
 // and the sitemap identical across locales while translation lands piecemeal.
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { defaultLang, isLang, type Lang } from '../i18n';
+import { defaultLang, locales, type Lang } from '../i18n';
 
 type Entry = CollectionEntry<'pages'>;
+
+// Astro's glob loader slugifies ids, which lowercases them — the directory
+// `zh-Hans/` arrives here as the id prefix `zh-hans`. Match case-insensitively
+// and map back to the canonical code, or every translation silently reads as an
+// English page whose slug happens to start with a language name.
+const byLowerCase = new Map(locales.map((l) => [l.toLowerCase(), l]));
 
 /** Split a collection id into its locale and slug (`zh-Hans/about` -> both). */
 function splitId(id: string): { lang: Lang; slug: string } {
   const [first, ...rest] = id.split('/');
-  return first && isLang(first) && first !== defaultLang
-    ? { lang: first, slug: rest.join('/') }
+  const matched = first ? byLowerCase.get(first.toLowerCase()) : undefined;
+  return matched && matched !== defaultLang
+    ? { lang: matched, slug: rest.join('/') }
     : { lang: defaultLang as Lang, slug: id };
 }
 
