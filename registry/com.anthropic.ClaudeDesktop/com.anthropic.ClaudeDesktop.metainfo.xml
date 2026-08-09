@@ -55,6 +55,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="1.26832.0">
+      <description></description>
+    </release>
     <release version="1.24012.11" />
     <release version="1.24012.9" />
     <release version="1.24012.0" />
