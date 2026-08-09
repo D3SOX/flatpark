@@ -128,4 +128,13 @@ assert_file "$tmp/site/legal/index.html"
 assert_contains "$tmp/site/legal/index.html" "no accounts"
 assert_contains "$tmp/site/legal/index.html" "without warranty"
 assert_contains "$index" "/legal/"
+
+# Header type-ahead: the dropdown ships on every page (including app pages,
+# which have no grid), and its index is a build artefact of its own.
+assert_contains "$index" "data-search-panel"
+assert_contains "$detail" "data-search-panel"
+assert_contains "$detail" "data-search-meta"
+assert_file "$tmp/site/search-index.json"
+assert_contains "$tmp/site/search-index.json" '"id":"io.flatpark.TestOne"'
+assert_contains "$tmp/site/search-index.json" '"section":"utilities"'
 echo "test_gen_site: PASS"

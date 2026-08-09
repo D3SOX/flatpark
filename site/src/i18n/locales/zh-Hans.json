@@ -12,6 +12,12 @@
   "nav.theme_toggle": "切换深色模式",
   "nav.github": "在 GitHub 查看源码",
 
+  "search.categories": "分类",
+  "search.apps": "应用",
+  "search.count": "{n} 个应用",
+  "search.more": "还有 {n} 个 —— 继续输入以缩小范围",
+  "search.empty": "没有匹配「{q}」的结果",
+
   "footer.group.Project": "项目",
   "footer.group.Docs": "文档",
   "footer.group.Community": "社区",
@@ -32,8 +38,6 @@
   "home.hero.title.tail": "已签名。",
   "home.hero.body": "一个面向官方 Linux 桌面应用的社区集中站 —— 所有应用都以已签名、沙盒隔离的 Flatpak 形式打包，一行命令即可安装。",
   "home.hero.setup": "配置指南",
-  "home.empty.title": "没有匹配的应用",
-  "home.empty.body": "换个关键词试试。",
 
   "apps.all": "全部应用",
   "apps.browse": "按分类浏览 →",
@@ -47,7 +51,7 @@
   "apps.sort.approved": "排序：开发者认可",
   "apps.sort.name": "排序：名称（A–Z）",
   "apps.empty.title": "没有匹配的应用",
-  "apps.empty.body": "换个关键词或分类试试。",
+  "apps.empty.body": "换个分类试试。",
 
   "detail.title": "在 Linux 上安装 {app} — Flatpak | {repo}",
   "detail.meta": "以已签名、沙盒隔离的 Flatpak 形式，在任意 Linux 发行版（Fedora、Arch、Ubuntu、Bazzite）上安装 {app}。{summary}",

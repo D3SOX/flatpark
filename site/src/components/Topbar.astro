@@ -37,21 +37,41 @@ const langLinks = locales.map((l) => ({
       <span class="hidden sm:inline">{repo.title}</span>
     </a>
 
-    <form
-      class="order-last w-full basis-full min-[480px]:order-none min-[480px]:mx-auto min-[480px]:max-w-md min-[480px]:basis-auto"
-      action={localizePath('/', lang)}
-      role="search"
+    <!--
+      Results drop out of the box itself (see src/scripts/search.js), so the
+      search works the same on every page — including app pages, which have no
+      grid to filter. The wrapper is the positioning context for that panel and
+      the click-outside boundary; the form stays only for the search landmark.
+    -->
+    <div
+      class="relative order-last w-full basis-full min-[480px]:order-none min-[480px]:mx-auto min-[480px]:max-w-md min-[480px]:basis-auto"
+      data-search-root
     >
-      <input
-        class="h-10 w-full rounded-full border border-line bg-canvas px-4 text-sm outline-none focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/20"
-        type="search"
-        name="q"
-        placeholder={t('nav.search')}
+      <form role="search">
+        <input
+          class="h-10 w-full rounded-full border border-line bg-canvas px-4 text-sm outline-none focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/20"
+          type="search"
+          name="q"
+          placeholder={t('nav.search')}
+          aria-label={t('nav.search')}
+          autocomplete="off"
+          role="combobox"
+          aria-expanded="false"
+          aria-controls="search-results"
+          aria-autocomplete="list"
+          data-search
+        />
+      </form>
+      <div
+        id="search-results"
+        role="listbox"
         aria-label={t('nav.search')}
-        autocomplete="off"
-        data-search
-      />
-    </form>
+        hidden
+        data-search-panel
+        class="absolute inset-x-0 top-full z-30 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-line bg-surface py-1 shadow-xl"
+      >
+      </div>
+    </div>
 
     <button
       type="button"
