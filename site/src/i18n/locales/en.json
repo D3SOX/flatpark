@@ -12,6 +12,12 @@
   "nav.theme_toggle": "Toggle dark mode",
   "nav.github": "View source on GitHub",
 
+  "search.categories": "Categories",
+  "search.apps": "Apps",
+  "search.count": "{n} apps",
+  "search.more": "+{n} more — keep typing to narrow",
+  "search.empty": "Nothing matches “{q}”",
+
   "footer.group.Project": "Project",
   "footer.group.Docs": "Docs",
   "footer.group.Community": "Community",
@@ -32,8 +38,6 @@
   "home.hero.title.tail": "Signed.",
   "home.hero.body": "A community hub for official Linux desktop apps — packaged as signed, sandboxed Flatpaks and installed with a single command.",
   "home.hero.setup": "Setup guide",
-  "home.empty.title": "No matching apps",
-  "home.empty.body": "Try a different search.",
 
   "apps.all": "All apps",
   "apps.browse": "Browse by category →",
@@ -47,7 +51,7 @@
   "apps.sort.approved": "Sort: Developer-approved",
   "apps.sort.name": "Sort: Name (A–Z)",
   "apps.empty.title": "No matching apps",
-  "apps.empty.body": "Try a different search or category.",
+  "apps.empty.body": "Try a different category.",
 
   "detail.title": "Install {app} on Linux — Flatpak | {repo}",
   "detail.meta": "Install {app} on any Linux distro (Fedora, Arch, Ubuntu, Bazzite) as a signed, sandboxed Flatpak. {summary}",

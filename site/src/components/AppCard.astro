@@ -9,11 +9,6 @@ const tags = app.tags ?? [];
 const section = app.section || app.category || 'utilities';
 const sectionText = sectionLabel(lang, section);
 const fallback = (app.name.match(/[A-Za-z0-9]/g) ?? []).slice(0, 2).join('').toUpperCase();
-// sectionText joins the haystack too, so searching the visible category name
-// works in whatever language the reader sees it in.
-const search = [app.id, app.name, app.summary, app.category, section, sectionText, tags.join(' ')]
-  .join(' ')
-  .toLowerCase();
 
 // Short relative age for the "Recently updated" sort. ponyfill: coarse buckets,
 // good enough for a card stat; the sort itself uses the ISO data-updated.
@@ -47,7 +42,6 @@ const updatedLabel = ago(app.updated);
   href={localizePath(`/apps/${app.id}/`, lang)}
   class="flex items-start gap-4 rounded-2xl border border-line bg-surface p-4 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lg"
   data-app-card
-  data-search={search}
   data-name={app.name}
   data-section={section}
   data-approved={app.upstreamApproved ? '1' : '0'}

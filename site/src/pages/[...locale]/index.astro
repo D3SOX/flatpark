@@ -84,14 +84,6 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
           class="inline-flex h-11 items-center rounded-full border border-line bg-surface px-6 text-sm font-semibold transition hover:border-brand"
         >{t('apps.more')}</button>
       </div>
-      <div
-        class="mt-6 rounded-2xl border border-dashed border-line p-12 text-center text-muted"
-        data-empty
-        hidden
-      >
-        <h2 class="font-bold text-ink">{t('home.empty.title')}</h2>
-        <p>{t('home.empty.body')}</p>
-      </div>
     </section>
   </main>
 </Base>

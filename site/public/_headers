@@ -11,3 +11,8 @@
 
 /catalog.json
   Cache-Control: public, max-age=300, must-revalidate
+
+# The header search index — same deal as the catalog: cheap to revalidate, and
+# a stale one would hide apps added by the last publish.
+/search-index.json
+  Cache-Control: public, max-age=300, must-revalidate

@@ -1,7 +1,8 @@
 ---
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
-import { defaultLang, getLangFromUrl, languages, localizePath, locales, stripLang, useTranslations } from '../i18n';
+import en from '../i18n/locales/en.json';
+import { defaultLang, getLangFromUrl, languages, localizePath, locales, sectionLabel, stripLang, useTranslations } from '../i18n';
 const { title, description, image, ogType = 'website' } = Astro.props;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
 const ogImage = image ? (Astro.site ? new URL(image, Astro.site).href : image) : null;
@@ -25,11 +26,31 @@ const xDefault = Astro.site ? new URL(localizePath(basePath, defaultLang), Astro
 
 // Strings the bundled client script needs. It cannot use `define:vars` (that is
 // inline-script only), so they ride along as JSON and are read back on boot.
+// The search ones keep their `{n}` / `{q}` placeholders: only the client knows
+// what to put there, since the numbers exist only once a query has been typed.
 const clientStrings = {
   copied: t('action.copied'),
   copiedInstall: t('action.copied_install'),
   copyFailed: t('action.copy_failed'),
   install: t('action.install'),
+  searchCategories: t('search.categories'),
+  searchApps: t('search.apps'),
+  searchCount: t('search.count'),
+  searchMore: t('search.more'),
+  searchEmpty: t('search.empty'),
+};
+
+// What the search index cannot carry, because it is one file for all locales:
+// the category labels in this reader's language, and the path prefix their app
+// pages live under. Slugs come from the dictionary rather than the catalog so
+// the layout does not have to load app data on every page.
+const searchMeta = {
+  base: localizePath('/', lang),
+  sections: Object.fromEntries(
+    Object.keys(en)
+      .filter((k) => k.startsWith('section.'))
+      .map((k) => [k.slice('section.'.length), sectionLabel(lang, k.slice('section.'.length))]),
+  ),
 };
 ---
 
@@ -79,8 +100,11 @@ const clientStrings = {
     <Footer />
 
     <script type="application/json" data-i18n set:html={JSON.stringify(clientStrings)}></script>
+    <script type="application/json" data-search-meta set:html={JSON.stringify(searchMeta)}></script>
 
     <script>
+      import { initSearch } from '../scripts/search.js';
+
       // Strings the script swaps in at runtime, handed over from the server by
       // Base.astro (see clientStrings there). English is the fallback so a
       // missing blob degrades to the pre-i18n behaviour instead of blanking.
@@ -98,14 +122,18 @@ const clientStrings = {
         }
       })();
 
-      // Catalog search (index only; no-ops elsewhere) + copy buttons.
+      // Header search: results come out of the box as a dropdown, on every
+      // page. It is deliberately independent of the grid below — the catalog
+      // stays put while you search, so a search never rearranges the page you
+      // are reading.
+      initSearch(S);
+
       // Dark/light toggle: flip the class, remember the choice.
       document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
         const dark = document.documentElement.classList.toggle('dark');
         try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
       });
 
-      const searchInput = document.querySelector('[data-search]');
       const cards = Array.from(document.querySelectorAll('[data-app-card]'));
       const grid = document.querySelector('[data-grid]');
       const empty = document.querySelector('[data-empty]');
@@ -139,21 +167,15 @@ const clientStrings = {
       }
 
       function apply() {
-        const q = (searchInput?.value || '').trim().toLowerCase();
         const shown = [];
         for (const card of cards) {
-          const hay = card.dataset.search || '';
-          const okSearch = q === '' || hay.includes(q);
-          const okSection = !activeSection || card.dataset.section === activeSection;
-          const show = okSearch && okSection;
+          const show = !activeSection || card.dataset.section === activeSection;
           card.hidden = !show;
           if (show) shown.push(card);
         }
         if (empty) empty.hidden = shown.length !== 0;
         fold(shown);
       }
-
-      searchInput?.addEventListener('input', apply);
 
       moreBtn?.addEventListener('click', () => {
         foldRows += FOLD_ROWS;
@@ -168,14 +190,21 @@ const clientStrings = {
       }
 
       // Category sidebar (browse page): filter cards by curated section.
-      for (const btn of document.querySelectorAll('[data-section-filter]')) {
-        btn.addEventListener('click', () => {
-          activeSection = btn.dataset.sectionFilter || '';
-          for (const b of document.querySelectorAll('[data-section-filter]')) {
-            b.classList.toggle('is-active', b === btn);
-          }
-          apply();
-        });
+      const sectionButtons = Array.from(document.querySelectorAll('[data-section-filter]'));
+      function selectSection(btn) {
+        activeSection = btn.dataset.sectionFilter || '';
+        for (const b of sectionButtons) b.classList.toggle('is-active', b === btn);
+        apply();
+      }
+      for (const btn of sectionButtons) btn.addEventListener('click', () => selectSection(btn));
+
+      // ?section=<slug> preselects one, which is what the category rows in the
+      // header search link to — they have to land on this page with a filter
+      // already applied.
+      const wantedSection = new URLSearchParams(location.search).get('section');
+      if (wantedSection) {
+        const btn = sectionButtons.find((b) => b.dataset.sectionFilter === wantedSection);
+        if (btn) selectSection(btn);
       }
 
       // Sort dropdown: reorder the grid in place. ISO data-updated sorts as text.
@@ -221,17 +250,6 @@ const clientStrings = {
           }
         }
       }
-
-      // Header search is global. On the catalog (cards present) it filters live;
-      // on other pages submitting navigates to the catalog with ?q=.
-      const searchForm = searchInput?.closest('form');
-      if (searchForm) {
-        searchForm.addEventListener('submit', (e) => {
-          if (cards.length) e.preventDefault();
-        });
-      }
-      const q = new URLSearchParams(location.search).get('q');
-      if (q && searchInput) searchInput.value = q;
 
       for (const button of document.querySelectorAll('[data-copy]')) {
         button.addEventListener('click', async (e) => {
