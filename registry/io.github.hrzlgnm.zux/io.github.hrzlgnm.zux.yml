@@ -1,0 +1,54 @@
+id: io.github.hrzlgnm.zux
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: zux
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # zux is a Tauri (Rust + Svelte, WebKitGTK) frontend over mdns-sd. dri for
+  # hardware-accelerated WebKit rendering; ipc/wayland/fallback-x11 for the
+  # window.
+  - --share=ipc
+  # Core function, not optional: mDNS/DNS-SD service discovery is multicast UDP
+  # on 224.0.0.251:5353. The app can only see services that reach the host
+  # network namespace, so it MUST share it.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # No filesystem grant: the app only reads the network and draws the graph;
+  # files are written via the file dialog (xdg-desktop-portal), never by
+  # browsing host paths. No tray either — the binary has no
+  # StatusNotifier/ayatana-appindicator dependency, so neither the ayatana-stack
+  # module nor the tray-icon socket is needed.
+modules:
+  - name: zux
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 zux-wrapper /app/bin/zux
+      - install -Dm644 io.github.hrzlgnm.zux.desktop /app/share/applications/io.github.hrzlgnm.zux.desktop
+      - install -Dm644 io.github.hrzlgnm.zux.metainfo.xml /app/share/metainfo/io.github.hrzlgnm.zux.metainfo.xml
+      - install -Dm644 io.github.hrzlgnm.zux.png /app/share/icons/hicolor/256x256/apps/io.github.hrzlgnm.zux.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: zux_linux_x64
+        only-arches:
+          - x86_64
+        url: https://github.com/hrzlgnm/zux/releases/download/v1.1.2/zux_linux_x64
+        sha256: 0bc37ebd43e0b6b5bf191ead81acb835b9600449bfdfee36971f684fc2540a19
+        size: 6553504
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: zux-wrapper
+      - type: file
+        path: io.github.hrzlgnm.zux.desktop
+      - type: file
+        path: io.github.hrzlgnm.zux.metainfo.xml
+      - type: file
+        path: io.github.hrzlgnm.zux.png

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=zux
+Comment=mDNS-SD Visualizer
+Exec=zux %U
+Icon=io.github.hrzlgnm.zux
+Terminal=false
+Categories=Network;Utility;
+StartupWMClass=zux
+Keywords=mDNS;DNS-SD;Bonjour;Zeroconf;visualizer;graph;discovery;

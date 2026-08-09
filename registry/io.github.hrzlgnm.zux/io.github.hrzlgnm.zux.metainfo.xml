@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.hrzlgnm.zux</id>
+  <name>zux</name>
+  <summary>mDNS-SD visualizer with force-directed graph visualization</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.hrzlgnm">
+    <name>hrzlgnm</name>
+  </developer>
+  <url type="homepage">https://github.com/hrzlgnm/zux</url>
+  <url type="bugtracker">https://github.com/hrzlgnm/zux/issues</url>
+  <url type="vcs-browser">https://github.com/hrzlgnm/zux</url>
+  <description>
+    <p>This is a community package of zux, maintained by the upstream developer. It repackages the official upstream Linux build unmodified.</p>
+    <p>zux automatically discovers every service advertised on your local network via mDNS/DNS-SD and renders it as an interactive force-directed graph, so you can see at a glance which service types, instances, hosts and addresses are present and how they relate to one another.</p>
+    <ul>
+      <li>Automatic discovery of every mDNS service type announced on the network.</li>
+      <li>Force-directed graph (vis-network) with multiple physics solvers; typed nodes are distinguished by shape and color — service types (diamond), service instances (circle), hosts (square) and IP addresses (triangle).</li>
+      <li>Live statistics, offline detection (greyed-out instances/hosts) and a detail panel with service type, subtype, hostname, port, addresses, TXT records and clickable URLs for HTTP(S) services.</li>
+      <li>Filtering by query, group toggling via the legend, live physics controls and SVG export.</li>
+    </ul>
+    <p>Permissions: the sandbox shares the host network namespace (--share=network) because that is the app's whole purpose — mDNS service discovery is multicast UDP on 224.0.0.251:5353, which can only reach the host network. Beyond that the package is deliberately narrow: it has no filesystem access — files are written only through the file dialog — and there is no tray icon. The app keeps its own settings under the per-app data directory, which Flatpak redirects into ~/.var/app/io.github.hrzlgnm.zux. Nothing else needs opting into via <code>flatpak override</code>.</p>
+  </description>
+  <content_rating type="oars-1.1" />
+  <categories>
+    <category>Network</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>mDNS</keyword>
+    <keyword>DNS-SD</keyword>
+    <keyword>Bonjour</keyword>
+    <keyword>Zeroconf</keyword>
+    <keyword>visualizer</keyword>
+    <keyword>graph</keyword>
+  </keywords>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>zux</binary>
+  </provides>
+  <launchable type="desktop-id">io.github.hrzlgnm.zux.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Force-directed graph of the mDNS services advertised on the local network</caption>
+      <image>https://raw.githubusercontent.com/hrzlgnm/zux/main/doc/assets/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.1.2" date="2026-08-08">
+      <description></description>
+    </release>
+  </releases>
+</component>
