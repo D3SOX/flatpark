@@ -35,6 +35,7 @@ that PR link in the table — the PR itself is the evidence.
 | LibreDB Studio | `org.libredb.Studio` | Approved by construction — submitted and maintained by its own developer ([flatpark#158](https://github.com/flatpark/flatpark/pull/158)) | 2026-07-30 |
 | mDNS Browser | `io.github.hrzlgnm.mdns-browser` | [hrzlgnm/mdns-browser#2447 (comment)](https://github.com/hrzlgnm/mdns-browser/discussions/2447#discussioncomment-17951526) — "I'll add it to the readme as an official install method"; done in [mdns-browser#2449](https://github.com/hrzlgnm/mdns-browser/pull/2449), and the maintainer opened [flatpark#197](https://github.com/flatpark/flatpark/pull/197) himself | 2026-08-09 |
 | MarkFlowy | `io.github.drl990114.MarkFlowy` | [drl990114/MarkFlowy#867 (comment)](https://github.com/drl990114/MarkFlowy/issues/867#issuecomment-5230396784) — "I also agree with releasing Markflowy on Flatpark … I will then include the installation instructions in the readme" | 2026-08-09 |
+| zux | `io.github.hrzlgnm.zux` | Approved by construction — submitted and maintained by its own developer ([flatpark#199](https://github.com/flatpark/flatpark/pull/199)) | 2026-08 |
 
 ## Not approved
 
