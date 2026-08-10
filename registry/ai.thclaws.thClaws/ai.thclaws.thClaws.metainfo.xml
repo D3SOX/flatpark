@@ -67,6 +67,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.111.0" date="2026-08-10">
+      <description></description>
+    </release>
     <release version="0.109.0" date="2026-08-03">
       <url>https://github.com/thClaws/thClaws/releases/tag/v0.109.0</url>
     </release>
