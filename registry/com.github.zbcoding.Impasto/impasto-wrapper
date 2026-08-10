@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+# Impasto is a self-contained .NET / GTK4 apphost staged by apply_extra to
+# /app/extra/impasto. The launcher locates its bundled CoreCLR and managed
+# assemblies relative to itself; libgtk-4, libadwaita, cairo, pango and ICU come
+# from org.gnome.Platform. Its icons/ and locale/ trees sit next to the binary,
+# where the app resolves them.
+exec /app/extra/impasto/Impasto "$@"
