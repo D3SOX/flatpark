@@ -61,6 +61,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="3.7.5" date="2026-08-09">
+      <description></description>
+    </release>
     <release version="3.6.5" date="2026-07-31">
       <url>https://zcode.z.ai/en#all-downloads</url>
     </release>

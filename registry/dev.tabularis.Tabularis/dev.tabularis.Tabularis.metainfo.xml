@@ -62,6 +62,9 @@
     <binary>tabularis</binary>
   </provides>
   <releases>
+    <release version="0.19.0" date="2026-08-10">
+      <description></description>
+    </release>
     <release version="0.18.0" date="2026-08-03" />
     <release version="0.17.0" date="2026-07-27" />
     <release version="0.16.0" date="2026-07-21" />
