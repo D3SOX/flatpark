@@ -63,9 +63,9 @@ modules:
         filename: deepchat.tar.gz
         only-arches:
           - x86_64
-        url: https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.0.9/DeepChat-1.0.9-linux-x64.tar.gz
-        sha256: 7387e7f0bd63555ef56d398bf8805ebf29762a9b7ba24bee509dfee2838d2537
-        size: 215573334
+        url: https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-linux-x64.tar.gz
+        sha256: d4c12ab6901fca162b1903f8c6aed381098172d758de6dcd2c643dcd4f9ecee3
+        size: 389251804
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
