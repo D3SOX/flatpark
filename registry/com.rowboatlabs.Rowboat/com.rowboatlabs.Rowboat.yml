@@ -63,9 +63,9 @@ modules:
         filename: rowboat-amd64.deb
         only-arches:
           - x86_64
-        url: https://github.com/rowboatlabs/rowboat/releases/download/v0.8.3/rowboat-linux_0.8.3_amd64.deb
-        sha256: 8d889445781e58f33210238a0bd8c74e814d47c4845ed3f1f3787238b698cb54
-        size: 98109286
+        url: https://github.com/rowboatlabs/rowboat/releases/download/v0.8.6/rowboat-linux_0.8.6_amd64.deb
+        sha256: 93fe1f3ae8e3340e4c180406ded24a3f2a348bcb9fc9fa0b44c2b01f8c3a1e9e
+        size: 98225184
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
