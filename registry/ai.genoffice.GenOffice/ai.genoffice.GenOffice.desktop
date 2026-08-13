@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=GenOffice
+GenericName=Office Suite
+Comment=Edit Word, Excel, PowerPoint, PDF and Markdown documents with built-in AI
+Exec=genoffice %U
+Icon=ai.genoffice.GenOffice
+Terminal=false
+StartupNotify=true
+StartupWMClass=genoffice
+Categories=Office;
+MimeType=application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.ms-excel;text/csv;application/pdf;text/markdown;
+Keywords=office;docx;xlsx;pptx;pdf;markdown;word;excel;powerpoint;spreadsheet;presentation;ai;

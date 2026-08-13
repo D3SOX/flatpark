@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ai.genoffice.GenOffice</id>
+  <name>GenOffice</name>
+  <summary>AI office suite for Word, Excel, PowerPoint, PDF and Markdown files</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <developer id="ai.genspark">
+    <name>Mainfunc</name>
+  </developer>
+  <url type="homepage">https://genoffice.ai/</url>
+  <url type="bugtracker">https://github.com/genspark-ai/genoffice/issues</url>
+  <url type="vcs-browser">https://github.com/genspark-ai/genoffice</url>
+  <description>
+    <p>This is a community package of GenOffice, maintained independently and unaffiliated with Mainfunc or Genspark. It repackages the official upstream Linux build unmodified.</p>
+    <p>GenOffice is an open-source desktop office suite that edits real Microsoft Office formats in place, alongside PDF and Markdown. Documents, spreadsheets, presentations, PDFs and Markdown files each open in their own module behind a shared launcher window.</p>
+    <ul>
+      <li>Edit .docx documents while preserving the parts of the file the editor did not touch.</li>
+      <li>Excel-compatible spreadsheets with formulas, charts and pivot tables, backed by a native calculation engine.</li>
+      <li>PowerPoint-compatible presentations with masters and layouts.</li>
+      <li>Edit PDFs with their original fonts, and convert Markdown to Word locally.</li>
+      <li>Optional AI assistance for drafting and editing, with block-level edits and snapshots.</li>
+    </ul>
+    <p>Document editing works offline. The AI features (agents, web search, image tools) sign in to a Genspark account and send the content they work on to that service, so they need an account and a network connection.</p>
+    <p>Permissions: this package keeps a tight sandbox by default — display, GPU, network, printing, notifications, your Documents and Downloads directories (the two places office files normally live; the app's own default save location is a GenOffice folder inside Documents) and the app's own sign-in directory. The rest of your home directory stays invisible; files kept elsewhere are reached through the desktop portal's file chooser, and only the ones you pick become visible to the app. A few optional capabilities are not granted by default; enable the ones you need with "flatpak override":</p>
+    <ul>
+      <li>Open and save documents anywhere in your home directory: <code>flatpak override --user --filesystem=home ai.genoffice.GenOffice</code></li>
+      <li>Use fonts installed under your home directory: <code>flatpak override --user --filesystem=~/.fonts:ro ai.genoffice.GenOffice</code></li>
+      <li>Audio playback for media embedded in a presentation: <code>flatpak override --user --socket=pulseaudio ai.genoffice.GenOffice</code></li>
+      <li>Undo the overrides above: <code>flatpak override --user --reset ai.genoffice.GenOffice</code></li>
+    </ul>
+    <p>Upstream's own updater only runs for the Windows, macOS and AppImage builds, so this package never tries to update itself — updates arrive through FlatPark.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>office</keyword>
+    <keyword>docx</keyword>
+    <keyword>xlsx</keyword>
+    <keyword>pptx</keyword>
+    <keyword>pdf</keyword>
+    <keyword>markdown</keyword>
+    <keyword>spreadsheet</keyword>
+    <keyword>presentation</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#1f6feb</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>genoffice</binary>
+    <mediatype>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mediatype>
+    <mediatype>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</mediatype>
+    <mediatype>application/vnd.openxmlformats-officedocument.presentationml.presentation</mediatype>
+    <mediatype>application/vnd.ms-excel</mediatype>
+    <mediatype>application/pdf</mediatype>
+    <mediatype>text/csv</mediatype>
+    <mediatype>text/markdown</mediatype>
+  </provides>
+  <launchable type="desktop-id">ai.genoffice.GenOffice.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://genoffice.ai/assets/shots/hero-shot.png</image>
+      <caption>Editing a document with the AI panel open</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://genoffice.ai/assets/shots/sheets-ai.png</image>
+      <caption>Spreadsheet with formulas and charts</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://genoffice.ai/assets/shots/slides-ai.png</image>
+      <caption>Presentation editing</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://genoffice.ai/assets/shots/pdf-ai.png</image>
+      <caption>PDF editing</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.6.279" date="2026-08-12">
+      <url>https://github.com/genspark-ai/genoffice/releases/tag/v0.6.279</url>
+    </release>
+  </releases>
+</component>
