@@ -1,0 +1,28 @@
+#!/bin/sh
+set -eu
+
+# GenOffice is an Electron app staged by apply_extra to /app/extra/genoffice.
+# Run it through zypak-wrapper (from org.electronjs.Electron2.BaseApp): zypak
+# redirects Chromium's SUID sandbox onto the Flatpak sandbox, so the app keeps
+# an internal sandbox rather than running with --no-sandbox.
+# --ozone-platform-hint=auto lets Chromium use Wayland when available and fall
+# back to X11.
+#
+# The app's own state (settings, projects, autosave/recovery copies, recent
+# lists) lives under Electron's userData, which resolves from XDG_CONFIG_HOME —
+# Flatpak points that at ~/.var/app/ai.genoffice.GenOffice/config, so it is
+# sandboxed and persistent. The Genspark sign-in token is the one thing kept
+# outside it, in ~/.genoffice/auth.json; that directory is granted in
+# finish-args so it survives restarts and is shared with a host install.
+#
+# Defensively clear ELECTRON_RUN_AS_NODE: if it leaks in from the launching
+# environment (e.g. a terminal inside VS Code/Electron), the binary would start
+# as plain Node instead of the GUI app.
+unset ELECTRON_RUN_AS_NODE
+
+# apply_extra resolves the launcher's upstream name from the .deb's own .desktop
+# file and records it next to the app tree, so a rename upstream does not need a
+# wrapper change.
+launcher="$(cat /app/extra/launcher 2>/dev/null || true)"
+[ -n "$launcher" ] || launcher=genoffice
+exec zypak-wrapper "/app/extra/genoffice/$launcher" --ozone-platform-hint=auto "$@"

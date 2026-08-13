@@ -1,0 +1,23 @@
+id: ai.genoffice.GenOffice
+name: GenOffice
+summary: AI office suite for Word, Excel, PowerPoint, PDF and Markdown files
+website: https://genoffice.ai/
+source_url: https://github.com/genspark-ai/genoffice
+build:
+  manifest: ai.genoffice.GenOffice.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Office
+  tags:
+    - Office
+    - Documents
+    - Spreadsheet
+    - Presentation
+    - PDF
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
