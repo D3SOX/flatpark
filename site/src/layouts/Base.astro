@@ -104,6 +104,7 @@ const searchMeta = {
 
     <script>
       import { initSearch } from '../scripts/search.js';
+      import { LANG_COOKIE } from '../i18n/negotiate.mjs';
 
       // Strings the script swaps in at runtime, handed over from the server by
       // Base.astro (see clientStrings there). English is the fallback so a
@@ -127,6 +128,17 @@ const searchMeta = {
       // stays put while you search, so a search never rearranges the page you
       // are reading.
       initSearch(S);
+
+      // Language switcher: remember an explicit pick. The edge function on `/`
+      // (functions/index.js) reads this cookie and stops guessing from
+      // Accept-Language once it is set — otherwise choosing English on a
+      // Chinese browser would be undone on the next visit to the homepage.
+      for (const link of document.querySelectorAll('[data-lang-pick]')) {
+        link.addEventListener('click', () => {
+          const value = link.dataset.langPick;
+          document.cookie = `${LANG_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax; secure`;
+        });
+      }
 
       // Dark/light toggle: flip the class, remember the choice.
       document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
