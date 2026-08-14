@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.google.AntigravityIDE</id>
+  <name>Antigravity IDE</name>
+  <summary>The fully-featured agentic IDE</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://antigravity.google</project_license>
+  <developer id="com.google">
+    <name>Google</name>
+  </developer>
+  <url type="homepage">https://antigravity.google</url>
+  <description>
+    <p>This is a community package of Antigravity IDE, maintained independently and unaffiliated with Google. It repackages Google's official Linux tarball unmodified.</p>
+    <p>Antigravity IDE is Google's fully-featured, agentic IDE with a deep understanding of your codebase. It enables you to manage and run local AI coding agents in parallel, edit code, and navigate project files.</p>
+    <p>A Google account is required for the agent features; the app itself is free to install.</p>
+    <p>Permissions: by default this package grants home directory access, because the agents work on your project files. A few optional capabilities are not granted by default; enable the ones you need with "flatpak override":</p>
+    <ul>
+      <li>Host command execution: <code>flatpak override --user --talk-name=org.freedesktop.Flatpak com.google.AntigravityIDE</code></li>
+      <li>Host SSH keys: <code>flatpak override --user --filesystem=~/.ssh:ro com.google.AntigravityIDE</code></li>
+    </ul>
+    <p>Because home access is granted, Antigravity IDE keeps its own state under your real home directory (<code>~/.gemini</code>) rather than inside the sandboxed app data directory, so that state is left behind by <code>flatpak uninstall --delete-data</code> and has to be removed by hand.</p>
+  </description>
+  <launchable type="desktop-id">com.google.AntigravityIDE.desktop</launchable>
+  <categories>
+    <category>Development</category>
+    <category>IDE</category>
+  </categories>
+  <keywords>
+    <keyword>agent</keyword>
+    <keyword>agents</keyword>
+    <keyword>agentic</keyword>
+    <keyword>ai</keyword>
+    <keyword>antigravity</keyword>
+    <keyword>ide</keyword>
+    <keyword>editor</keyword>
+  </keywords>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <content_rating type="oars-1.1" />
+  <provides>
+    <binary>antigravity</binary>
+    <mediatype>x-scheme-handler/antigravity</mediatype>
+    <mediatype>x-scheme-handler/antigravity-ide</mediatype>
+  </provides>
+  <releases>
+    <release version="2.5.5" date="2026-08-13" />
+  </releases>
+</component>
