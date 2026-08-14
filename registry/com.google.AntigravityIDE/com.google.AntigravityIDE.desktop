@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Antigravity IDE
+Comment=The fully-featured agentic IDE
+GenericName=Integrated Development Environment
+Keywords=AI;Agent;Agents;Agentic;Antigravity;IDE;Editor;Development;
+Exec=antigravity %U
+Icon=com.google.AntigravityIDE
+Type=Application
+Terminal=false
+StartupNotify=true
+StartupWMClass=antigravity-ide
+Categories=Development;IDE;
+MimeType=inode/directory;x-scheme-handler/antigravity;x-scheme-handler/antigravity-ide;
