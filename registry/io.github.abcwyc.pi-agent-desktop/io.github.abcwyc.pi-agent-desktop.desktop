@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Pi Agent
+GenericName=AI Coding Agent
+Comment=Desktop app for the pi coding agent
+Exec=pi-agent %U
+Icon=io.github.abcwyc.pi-agent-desktop
+Terminal=false
+StartupNotify=true
+StartupWMClass=pi-agent-desktop
+Categories=Development;IDE;
+Keywords=AI;Agent;Coding;Developer;Pi;

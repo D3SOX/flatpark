@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.abcwyc.pi-agent-desktop</id>
+  <name>Pi Agent</name>
+  <summary>Desktop app for the pi coding agent</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.abcwyc">
+    <name>pi-agent-desktop contributors</name>
+  </developer>
+  <url type="homepage">https://github.com/abcwyc/pi-agent-desktop</url>
+  <url type="bugtracker">https://github.com/abcwyc/pi-agent-desktop/issues</url>
+  <url type="download">https://github.com/abcwyc/pi-agent-desktop/releases</url>
+  <description>
+    <p>This is a community package of Pi Agent, maintained independently. It repackages the official upstream Linux Debian build unmodified.</p>
+    <p>Pi Agent puts the pi coding agent in a desktop window. It bundles the Next.js server, the Node.js runtime and the Pi SDK, so the local server starts with the app — no terminal, no separate Node installation and no manually started web server.</p>
+    <ul>
+      <li>Browse and resume past Pi sessions by project instead of digging through session files.</li>
+      <li>Watch a run live, with thinking, tool calls, context usage, cost and compaction state visible.</li>
+      <li>Continue from any earlier message as a branch, or fork a conversation into its own session.</li>
+      <li>Manage models, OAuth and API keys, custom model configuration, skills and plugins.</li>
+      <li>Switch Git worktrees from the sidebar and preview source, diffs, Markdown, images, audio, PDF and DOCX.</li>
+    </ul>
+    <p>Pi Agent reads pi's own data directory, <code>~/.pi/agent</code>, so an existing terminal setup — sessions, models and authentication — is picked up on first launch. Installing this package does not install a global <code>pi</code> command; the CLI is a separate install from the pi project.</p>
+    <p>A provider account or API key is required for the agent itself; the app is free to install.</p>
+    <p>Permissions: this package grants network, display, GPU, audio, notifications and tray access, plus its own <code>~/.pi</code> directory. It does not grant broad home-directory access by default.</p>
+    <p>The agent shells out to developer tools that no Flatpak runtime ships — Git above all, which the worktree switching and the diff views are built on. This package puts a bridge on the app's PATH that forwards those commands to the same tools on your host, so your existing Git, Node and language toolchains, and the credentials you have already authorized there, are what run. FlatPark does not bundle or authenticate any of them.</p>
+    <p>Because host commands run against real host paths, grant access to where your projects live so the app and those commands agree on what a path means:</p>
+    <ul>
+      <li>Open host projects at their real paths: <code>flatpak override --user --filesystem=home io.github.abcwyc.pi-agent-desktop</code></li>
+      <li>Or scope it to one directory: <code>flatpak override --user --filesystem=~/Projects io.github.abcwyc.pi-agent-desktop</code></li>
+      <li>Reuse your host SSH keys for Git remotes: <code>flatpak override --user --filesystem=~/.ssh:ro io.github.abcwyc.pi-agent-desktop</code></li>
+    </ul>
+    <p>Updates come through Flatpak: this package tracks upstream's GitHub releases, so use <code>flatpak update</code> rather than the in-app upgrade button, which installs into a location the sandbox does not own.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Development</category>
+    <category>IDE</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>agent</keyword>
+    <keyword>coding</keyword>
+    <keyword>developer</keyword>
+    <keyword>pi</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#1b1b1f</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">1024</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>pi-agent</binary>
+  </provides>
+  <launchable type="desktop-id">io.github.abcwyc.pi-agent-desktop.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/abcwyc/pi-agent-desktop/main/docs/screenshots/pi-agent-light%402x.png</image>
+      <caption>A Pi session in the desktop app, light mode</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/abcwyc/pi-agent-desktop/main/docs/screenshots/pi-agent-dark%402x.png</image>
+      <caption>A Pi session in the desktop app, dark mode</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.3.0" date="2026-08-14">
+      <url>https://github.com/abcwyc/pi-agent-desktop/releases/tag/v0.3.0</url>
+    </release>
+  </releases>
+</component>
