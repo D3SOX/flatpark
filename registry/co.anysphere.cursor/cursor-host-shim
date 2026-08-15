@@ -1,0 +1,93 @@
+#!/bin/sh
+set -eu
+
+cmd="$(basename "$0")"
+
+case "$cmd" in
+  ""|.|..|*/*|*' '*|*'	'*|*:*|*';'*|*"'"*|*'"'*|*'\'*|*'`'*|*'$'*|*'('*|*')'*|*'{'*|*'}'*|*'['*|*']'*|*'<'*|*'>'*|*'|'*|*'&'*)
+    echo "unsupported Cursor host command shim: $cmd" >&2
+    exit 127
+    ;;
+esac
+
+# Resolve on the host. Cursor does not bundle or authenticate these CLIs; users
+# install the commands they want on the host and authorize them there. Prefer
+# predictable PATH lookup, then fall back to the user's shell only to discover
+# an absolute command path for shell-managed installs (nvm, mise, asdf). The
+# command itself is exec'd directly so shell startup output does not pollute
+# stdout — the agent parses that output.
+host_script='
+cmd="$1"
+shift
+
+PATH="${PATH:-}:/usr/local/bin:/usr/bin:/bin:/snap/bin:$HOME/.local/bin:$HOME/bin"
+export PATH
+
+case "${SHELL:-}" in
+  */bash|*/zsh|*/ksh)
+    shell_path="$("$SHELL" -ic '"'"'printf "%s\n" "$PATH"'"'"' 2>/dev/null | sed -n "/\//h; \${g;p;}" || true)"
+    if [ -n "$shell_path" ]; then
+      PATH="$PATH:$shell_path"
+      export PATH
+    fi
+    ;;
+esac
+
+resolved="$(command -v "$cmd" 2>/dev/null || true)"
+
+if [ -z "$resolved" ]; then
+  case "${SHELL:-}" in
+    */bash|*/zsh|*/ksh)
+      resolved="$("$SHELL" -ic '"'"'command -v "$1"'"'"' cursor-host-shell "$cmd" 2>/dev/null | sed -n "1p" || true)"
+      ;;
+  esac
+fi
+
+if [ -n "$resolved" ] && [ -x "$resolved" ]; then
+  exec "$resolved" "$@"
+fi
+
+echo "Cursor Flatpak host bridge could not find host command: $cmd" >&2
+echo "Install and authorize it on the host, then expose it through PATH or your login shell." >&2
+exit 127
+'
+
+# Which directory the command runs in on the host. flatpak-spawn always hands the
+# portal a working directory — the caller's own when --directory is not given —
+# so a directory that exists only inside the sandbox fails the whole spawn with
+# "Failed to change to directory". Passing a host-side directory explicitly is
+# therefore the fallback, not omitting the option.
+#
+# This is a real case rather than a theoretical one: an extension host or a
+# language server that was not started from a project directory spawns its
+# helpers from wherever the editor process itself sits, which is inside the app
+# tree. /bin/sh sets PWD from getcwd() at startup, so this is the real working
+# directory rather than one inherited from the parent.
+host_dir="$PWD"
+
+# Paths that exist only inside the sandbox: the app tree, the runtime, and
+# document-portal mounts.
+case "$PWD" in
+  /app|/app/*|/usr|/usr/*|/run/user/*/doc|/run/user/*/doc/*|/run/flatpak/doc/*)
+    host_dir=""
+    ;;
+esac
+
+# Capability probes carry no working-directory meaning and must not fail just
+# because the sandbox CWD does not exist on the host.
+case "$cmd" in
+  git)
+    if [ "${1:-}" = "--version" ] || [ "$#" -eq 0 ]; then
+      host_dir=""
+    fi
+    ;;
+  node|npm|npx)
+    if [ "${1:-}" = "--version" ] || [ "${1:-}" = "-v" ]; then
+      host_dir=""
+    fi
+    ;;
+esac
+
+[ -n "$host_dir" ] && [ -d "$host_dir" ] || host_dir="${HOME:-/}"
+
+exec flatpak-spawn --host --directory="$host_dir" sh -c "$host_script" cursor-host-shim "$cmd" "$@"

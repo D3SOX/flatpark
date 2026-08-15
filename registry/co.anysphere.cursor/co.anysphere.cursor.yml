@@ -1,0 +1,95 @@
+id: co.anysphere.cursor
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox, so Cursor keeps Chromium's
+# internal sandbox instead of launching with --no-sandbox. The base is a
+# prebuilt ref merged in at build time; the official upstream application tree
+# is fetched as extra-data and left unmodified.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: cursor
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # VS Code-derived editor. The prebuilt tree bundles Chromium, its ffmpeg and
+  # swiftshader libraries, the Node-based extension host and every bundled
+  # extension; the GTK3, NSS, ATK, CUPS, DRM/GBM, ALSA and X11 stacks come from
+  # org.freedesktop.Platform 25.08.
+  - --share=ipc
+  # Model requests, sign-in, the extension marketplace and update checks.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Chromium compositing for the editor, diff views and agent panel.
+  - --device=dri
+  # Editor sounds: the terminal bell and the accessibility signals that announce
+  # a finished agent run.
+  - --socket=pulseaudio
+  # Desktop notifications from the editor and its extensions.
+  - --talk-name=org.freedesktop.Notifications
+  # Sign-in tokens and extension credentials go to the system keyring when one
+  # is available; without this every launch starts signed out.
+  - --talk-name=org.freedesktop.secrets
+  # An IDE is pointed at existing source trees, and it holds its own extensions,
+  # CLI state and agent rules in a hardcoded ~/.cursor. Both need the real home:
+  # Flatpak redirects only the XDG dirs, and a project reached through the
+  # file-chooser portal is not at the path the integrated terminal, the agent
+  # and git would have to agree on. Declared in flatpark.yml
+  # policy.dangerous_permissions.
+  - --filesystem=home
+  # Host command bridge: the wrapper generates a runtime PATH directory whose
+  # entries forward through flatpak-spawn --host, so the developer tools the
+  # integrated terminal and the agent shell out to — git, language toolchains,
+  # build and test runners — resolve to the user's own installs. The runtime
+  # ships bash and coreutils but no developer toolchain, and FlatPark neither
+  # bundles nor authenticates those CLIs. This is deliberately declared in
+  # flatpark.yml policy.dangerous_permissions and requires human review.
+  - --talk-name=org.freedesktop.Flatpak
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the editor — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # cannot reach — never start as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+modules:
+  - name: cursor
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 cursor-wrapper /app/bin/cursor
+      - install -Dm755 cursor-host-shim /app/lib/cursor/cursor-host-shim
+      - install -Dm755 cursor-setup-host-bin /app/lib/cursor/cursor-setup-host-bin
+      - install -Dm644 co.anysphere.cursor.desktop /app/share/applications/co.anysphere.cursor.desktop
+      - install -Dm644 co.anysphere.cursor.url-handler.desktop /app/share/applications/co.anysphere.cursor.url-handler.desktop
+      - install -Dm644 co.anysphere.cursor.metainfo.xml /app/share/metainfo/co.anysphere.cursor.metainfo.xml
+      - install -Dm644 co.anysphere.cursor.xml /app/share/mime/packages/co.anysphere.cursor.xml
+      - install -Dm644 co.anysphere.cursor.png /app/share/icons/hicolor/512x512/apps/co.anysphere.cursor.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: cursor-amd64.deb
+        only-arches:
+          - x86_64
+        url: https://downloads.cursor.com/production/6b2afae0257df2bb5e1835f15165dc2f0de056b2/linux/x64/deb/amd64/deb/cursor_3.16.17_amd64.deb
+        sha256: 89068d0db65a8b9bbd723470c261573ab1dd6011ee699ab9ac1c587bc74e9b96
+        size: 218417452
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: cursor-wrapper
+      - type: file
+        path: cursor-host-shim
+      - type: file
+        path: cursor-setup-host-bin
+      - type: file
+        path: co.anysphere.cursor.desktop
+      - type: file
+        path: co.anysphere.cursor.url-handler.desktop
+      - type: file
+        path: co.anysphere.cursor.metainfo.xml
+      - type: file
+        path: co.anysphere.cursor.xml
+      - type: file
+        path: co.anysphere.cursor.png
