@@ -1,0 +1,25 @@
+id: co.anysphere.cursor
+name: Cursor
+summary: The AI code editor
+website: https://cursor.com
+source_url: https://cursor.com/download
+build:
+  manifest: co.anysphere.cursor.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Agents
+    - Coding
+    - IDE
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: true
+  extra_data_first: true
+  dangerous_permissions:
+    - --filesystem=home
+    - --talk-name=org.freedesktop.Flatpak
