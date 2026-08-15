@@ -1,0 +1,45 @@
+#!/bin/sh
+set -eu
+
+# Pi Agent is a Tauri (WebKitGTK) shell staged by apply_extra as a whole FHS
+# tree at /app/extra/usr. It has to be launched from usr/bin so Tauri resolves
+# its resources through <exe dir>/../lib/<product name> and finds the bundled
+# Node runtime and Next.js server it starts on a local port. The binary links
+# only against libraries in org.gnome.Platform (webkit2gtk-4.1, gtk-3,
+# libsoup-3) plus libayatana-appindicator, which Tauri's tray-icon dlopen-s and
+# which the manifest builds into /app/lib.
+#
+# A generated host-bin directory is appended to PATH so the developer tools the
+# agent shells out to — git above all, plus node/npm and language toolchains —
+# resolve to the user's own host installs, which is where their projects and
+# credentials already are.
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside
+# the Flatpak sandbox; disabling it is the reliable default.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+# Tauri treats APPDIR/APPIMAGE as a signal that it is running from an AppImage
+# and resolves its resources down a path that does not exist in this layout, so
+# make sure neither is inherited from the host environment.
+unset APPDIR APPIMAGE
+
+extra_root=/app/extra
+launcher_file="$extra_root/pi-agent-launcher"
+launcher="pi-agent-desktop"
+if [ -r "$launcher_file" ]; then
+  read -r recorded < "$launcher_file" || recorded=""
+  [ -n "$recorded" ] && launcher="$recorded"
+fi
+
+host_bin="$(/app/lib/pi-agent/pi-agent-setup-host-bin || true)"
+if [ -n "$host_bin" ] && [ -d "$host_bin" ]; then
+  export PATH="/app/bin:$PATH:$host_bin"
+else
+  export PATH="/app/bin:$PATH"
+fi
+
+# Launch by absolute path and leave the working directory alone: it is inherited
+# by the commands Pi Agent spawns, and a working directory that exists only
+# inside the sandbox (such as the app tree) cannot be entered by anything
+# forwarded to the host.
+exec "$extra_root/usr/bin/$launcher" "$@"

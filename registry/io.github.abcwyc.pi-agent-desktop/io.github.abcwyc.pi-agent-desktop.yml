@@ -1,0 +1,97 @@
+id: io.github.abcwyc.pi-agent-desktop
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: pi-agent
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Tauri/WebKitGTK front end over a local Next.js server that the app starts
+  # itself with its own bundled Node runtime. The prebuilt tree links only
+  # against webkit2gtk-4.1, gtk-3, libsoup-3 and glib from org.gnome.Platform 50,
+  # plus libayatana-appindicator for the tray (built in as a module below).
+  - --share=ipc
+  # Model API calls, sign-in and the app's own release check.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # WebKit rendering for the session view, diffs and file previews.
+  - --device=dri
+  # Pi Agent plays a sound when a long-running agent task finishes.
+  - --socket=pulseaudio
+  # Desktop notifications for finished runs and approval prompts.
+  - --talk-name=org.freedesktop.Notifications
+  # Tray icon with Show/Quit, and the close-to-tray behaviour behind it.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+  # Pi keeps its agent data in a hardcoded ~/.pi (sessions under
+  # agent/sessions/, model configuration and credentials), which is also where
+  # the Pi CLI reads and writes, so an existing terminal setup is picked up.
+  # Flatpak redirects only the XDG dirs, so without this the directory lands on
+  # the ephemeral home overlay and every launch starts with no history and no
+  # credentials; :create makes it on a fresh first run.
+  - --filesystem=~/.pi:create
+  # Host command bridge: the wrapper generates a runtime PATH directory whose
+  # entries forward through flatpak-spawn --host, so the shell tools the agent
+  # runs resolve to the user's own git, Node/npm and language toolchains, which
+  # is where their projects and credentials already live. Git is what the
+  # sidebar's worktree switching and the diff views are built on, and no Flatpak
+  # runtime ships it or a language toolchain; FlatPark neither bundles nor
+  # authenticates those CLIs. This is deliberately declared in flatpark.yml
+  # policy.dangerous_permissions and requires human review.
+  - --talk-name=org.freedesktop.Flatpak
+  # Deliberately NOT granted by default (documented as opt-in in the metainfo):
+  #   --filesystem=home        -> open existing host projects at their real paths
+  #   --filesystem=~/.ssh:ro   -> reuse host SSH keys for git remotes
+  # Pi's own data stays under ~/.pi either way.
+modules:
+  # Tauri's tray-icon dlopen-s libayatana-appindicator3.so.1 when the app
+  # creates its tray icon, and the GNOME runtime does not ship it.
+  # Prebuilt ayatana tray stack (libdbusmenu, ayatana-ido, libayatana-indicator,
+  # libayatana-appindicator) from https://github.com/flatpark/prebuilt, built
+  # against org.gnome.Sdk//50; the tag's manifest records the exact sources,
+  # pins and patches. One pinned archive instead of five source builds per app,
+  # and no launchpad.net downloads at build time.
+  - name: ayatana-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
+        sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
+  - name: pi-agent
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 pi-agent-wrapper /app/bin/pi-agent
+      - install -Dm755 pi-agent-host-shim /app/lib/pi-agent/pi-agent-host-shim
+      - install -Dm755 pi-agent-setup-host-bin /app/lib/pi-agent/pi-agent-setup-host-bin
+      - install -Dm644 io.github.abcwyc.pi-agent-desktop.desktop /app/share/applications/io.github.abcwyc.pi-agent-desktop.desktop
+      - install -Dm644 io.github.abcwyc.pi-agent-desktop.metainfo.xml /app/share/metainfo/io.github.abcwyc.pi-agent-desktop.metainfo.xml
+      - install -Dm644 io.github.abcwyc.pi-agent-desktop.png /app/share/icons/hicolor/512x512/apps/io.github.abcwyc.pi-agent-desktop.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: pi-agent.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/abcwyc/pi-agent-desktop/releases/download/v0.3.0/Pi.Agent_0.3.0_amd64.deb
+        sha256: df234881f0ee53457793c26c5b7401344f9d9ba83fb34047992d62ea812dccbc
+        size: 87067182
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: pi-agent-wrapper
+      - type: file
+        path: pi-agent-host-shim
+      - type: file
+        path: pi-agent-setup-host-bin
+      - type: file
+        path: io.github.abcwyc.pi-agent-desktop.desktop
+      - type: file
+        path: io.github.abcwyc.pi-agent-desktop.metainfo.xml
+      - type: file
+        path: io.github.abcwyc.pi-agent-desktop.png

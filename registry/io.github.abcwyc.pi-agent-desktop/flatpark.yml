@@ -1,0 +1,24 @@
+id: io.github.abcwyc.pi-agent-desktop
+name: Pi Agent
+summary: Desktop app for the pi coding agent
+website: https://github.com/abcwyc/pi-agent-desktop
+source_url: https://github.com/abcwyc/pi-agent-desktop/releases
+build:
+  manifest: io.github.abcwyc.pi-agent-desktop.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Agents
+    - Coding
+    - Developer
+    - Tauri
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions:
+    - --talk-name=org.freedesktop.Flatpak
