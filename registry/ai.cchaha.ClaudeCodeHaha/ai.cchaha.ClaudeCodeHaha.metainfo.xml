@@ -73,6 +73,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.5.4" date="2026-08-14">
+      <description></description>
+    </release>
     <release version="0.5.3" date="2026-08-04">
       <url>https://github.com/NanmiCoder/cc-haha/releases/tag/v0.5.3</url>
     </release>
