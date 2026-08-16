@@ -21,9 +21,13 @@ rel="$(curl -fsSL ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
 
 version="$(jq -r '.tag_name | ltrimstr("v")' <<<"$rel")"
 date="$(jq -r '.published_at' <<<"$rel" | cut -c1-10)"
-# The Linux x86_64 build is the lone `yaak_<version>_amd64.deb` asset (the others
-# are the arm64 .deb, the .rpm/.AppImage, and the macOS/Windows installers).
-url="$(jq -r '.assets[] | select(.name | test("_amd64\\.deb$")) | .browser_download_url' <<<"$rel" | head -n1)"
+# The Linux x86_64 build we package is `yaak_<version>_amd64.deb` (the others are
+# the arm64 .deb, the .rpm/.AppImage, and the macOS/Windows installers). Match it
+# anchored at the start: upstream also publishes a second amd64 .deb from its CEF
+# variant, `yaak-cef_<version>_amd64.deb`, which sorts first in the asset list and
+# lays its tree out under a different name (usr/bin/yaak-cef, usr/lib/yaak-cef).
+# This manifest, apply_extra and the wrapper all target the WebKitGTK build.
+url="$(jq -r '.assets[] | select(.name | test("^yaak_[^/]*_amd64\\.deb$")) | .browser_download_url' <<<"$rel" | head -n1)"
 
 [ -n "$version" ] && [ -n "$url" ] || { echo "failed to resolve yaak release" >&2; exit 1; }
 echo "resolved yaak $version ($date): $url" >&2
