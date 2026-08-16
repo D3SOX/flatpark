@@ -68,6 +68,9 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.3.1" date="2026-08-16">
+      <description></description>
+    </release>
     <release version="0.3.0" date="2026-08-14">
       <url>https://github.com/abcwyc/pi-agent-desktop/releases/tag/v0.3.0</url>
     </release>
