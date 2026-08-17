@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Whalebird
+Comment=Single-column Fediverse client for Mastodon, Pleroma, Friendica and Firefish
+Exec=whalebird %U
+Icon=social.whalebird.WhalebirdDesktop
+Terminal=false
+Categories=Network;Chat;
+StartupWMClass=Whalebird
+Keywords=fediverse;mastodon;pleroma;friendica;firefish;microblog;

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>social.whalebird.WhalebirdDesktop</id>
+  <name>Whalebird</name>
+  <summary>Single-column Fediverse client for Mastodon, Pleroma, Friendica and Firefish</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <developer id="social.whalebird">
+    <name>Akira Fukushima and Whalebird contributors</name>
+  </developer>
+  <url type="homepage">https://whalebird.social/</url>
+  <url type="bugtracker">https://github.com/h3poteto/whalebird-desktop/issues</url>
+  <url type="vcs-browser">https://github.com/h3poteto/whalebird-desktop</url>
+  <url type="translate">https://crowdin.com/project/whalebird-desktop</url>
+  <description>
+    <p>This is a community package of Whalebird, maintained independently. It repackages the official upstream Linux build unmodified.</p>
+    <p>Whalebird is a desktop Fediverse client with a Slack-like, single-column layout: a server and account switcher down the side, one column of timelines at a time, and keyboard-driven navigation. It streams timelines live, raises desktop notifications for mentions, boosts, favourites and follows, and manages several accounts across several servers at once.</p>
+    <p>It speaks Mastodon, Pleroma, Friendica, Firefish, GoToSocial and Pixelfed, with unofficial support for Akkoma, Hometown and Iceshrimp.</p>
+    <p>Permissions: this package keeps a tight sandbox — network, display, audio and notifications, and no access to your files by default. Your accounts, settings and cached timelines live inside the sandbox. Attaching a picture to a post and saving an image out of a timeline both go through the desktop portal, which grants access to just the file you pick.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Timelines and the account switcher in the single-column layout</caption>
+      <image>https://github.com/h3poteto/whalebird-desktop/raw/main/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <launchable type="desktop-id">social.whalebird.WhalebirdDesktop.desktop</launchable>
+  <categories>
+    <category>Network</category>
+    <category>Chat</category>
+  </categories>
+  <keywords>
+    <keyword>fediverse</keyword>
+    <keyword>mastodon</keyword>
+    <keyword>pleroma</keyword>
+    <keyword>friendica</keyword>
+    <keyword>firefish</keyword>
+    <keyword>microblog</keyword>
+  </keywords>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+  <provides>
+    <binary>whalebird</binary>
+  </provides>
+  <releases>
+    <release version="6.3.0" date="2026-05-02">
+      <description></description>
+    </release>
+    <release version="6.2.7" date="2025-12-09" />
+    <release version="6.2.6" date="2025-12-09" />
+    <release version="6.2.5" date="2025-09-18" />
+    <release version="6.2.4" date="2025-07-19" />
+    <release version="6.2.3" date="2025-06-29" />
+    <release version="6.2.2" date="2025-05-11" />
+    <release version="6.2.1" date="2025-03-01" />
+    <release version="6.2.0" date="2025-01-08" />
+  </releases>
+</component>
