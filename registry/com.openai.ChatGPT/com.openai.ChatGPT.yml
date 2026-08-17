@@ -1,0 +1,111 @@
+id: com.openai.ChatGPT
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox so the app keeps an internal
+# sandbox (the wrapper runs it via zypak-wrapper) instead of --no-sandbox. The
+# base is a prebuilt ref merged into the app at build time; the official
+# upstream application tree is fetched as extra-data and left unmodified.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: chatgpt
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Desktop app for ChatGPT and Codex. The official Debian package bundles the
+  # Chromium/Electron application tree; the GTK3, NSS, ATK, CUPS, DRM/GBM and
+  # X11 stacks it links come from the Freedesktop runtime.
+  - --share=ipc
+  # Account sign-in, chat, model responses and Codex sync.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Chromium compositing and GPU rasterisation.
+  - --device=dri
+  # Audio for voice mode and the notification sound shipped with the app.
+  - --socket=pulseaudio
+  # Tray icon. The app claims org.freedesktop.StatusNotifierItem-<getpid()>-1
+  # and gives up on the first refusal, so without a matching own-name the launch
+  # log only carries a ServiceUnknown from the bus proxy and no icon appears.
+  # Every sandboxed app is PID 2, so chatgpt-wrapper pins the reported PID to
+  # 919191 (see the fake-getpid module) and this single name is all it ever
+  # needs, instead of racing every other Flatpak tray app for the PID-2 name.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.freedesktop.StatusNotifierItem-919191-1
+  # Encrypt the stored account session with the login keyring when present.
+  - --talk-name=org.freedesktop.secrets
+  # Codex keeps its config, credentials and session history in ~/.codex, and
+  # unpacks the runtimes it downloads into ~/.cache/codex-runtimes. Flatpak
+  # redirects only the XDG directories, so both would land on the throwaway
+  # tmpfs $HOME and be lost on every restart. Bind the two real host paths —
+  # they are the same directories the Codex CLI uses, so the app and a host
+  # codex share one login and one runtime cache. `:create` is required: without
+  # it a first run on a machine that has never used Codex finds no directory to
+  # bind and loses everything it writes.
+  - --filesystem=~/.codex:create
+  - --filesystem=~/.cache/codex-runtimes:create
+  # The Freedesktop runtime ships no git, and the bundled Codex agent shells out
+  # to it constantly. /app/bin/git is a shim that runs the host's git through
+  # flatpak-spawn (see git-host), so the agent works with the user's own
+  # ~/.gitconfig, credential helper and SSH keys on the directories they granted.
+  # This is a genuine widening: git executes hooks, aliases, pagers and
+  # core.sshCommand, so what goes through the shim runs on the host, outside the
+  # sandbox. Declared in flatpark.yml policy.dangerous_permissions and spelled
+  # out in the metainfo so a user can turn it off with
+  # `flatpak override --user --no-talk-name=org.freedesktop.Flatpak`.
+  - --talk-name=org.freedesktop.Flatpak
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the binary — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # can't reach — always start as the GUI app rather than as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # Deliberately not granted by default:
+  #   --filesystem=home / =host       -> the agent sees no user files until a
+  #                                      user grants a directory explicitly
+  #   --talk-name=org.freedesktop.Flatpak -> host command execution
+  #   --device=all                    -> --device=dri covers the GPU alone
+  # Chat, sign-in and the bundled Codex tooling work with the app's own data
+  # under Flatpak's redirected HOME; the metainfo documents the per-directory
+  # overrides for working on projects.
+modules:
+  - name: chatgpt-fakepid
+    buildsystem: simple
+    build-commands:
+      - cc -shared -fPIC -O2 fake-getpid.c -o libfakepid.so -ldl
+      - install -Dm755 libfakepid.so /app/lib/chatgpt/libfakepid.so
+    sources:
+      - type: file
+        path: fake-getpid.c
+
+  - name: chatgpt
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 chatgpt-wrapper /app/bin/chatgpt
+      - install -Dm755 git-host /app/bin/git
+      - install -Dm644 com.openai.ChatGPT.desktop /app/share/applications/com.openai.ChatGPT.desktop
+      - install -Dm644 com.openai.ChatGPT.metainfo.xml /app/share/metainfo/com.openai.ChatGPT.metainfo.xml
+      - install -Dm644 com.openai.ChatGPT.png /app/share/icons/hicolor/512x512/apps/com.openai.ChatGPT.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: chatgpt-amd64.deb
+        only-arches:
+          - x86_64
+        url: https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_26.810.52044_amd64.deb
+        sha256: 708a15a1bb76e2bb7f0e376e5145391fa277ad3a64057c1d32537bdc2a1b4e6e
+        size: 391801406
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: chatgpt-wrapper
+      - type: file
+        path: git-host
+      - type: file
+        path: com.openai.ChatGPT.desktop
+      - type: file
+        path: com.openai.ChatGPT.metainfo.xml
+      - type: file
+        path: com.openai.ChatGPT.png
