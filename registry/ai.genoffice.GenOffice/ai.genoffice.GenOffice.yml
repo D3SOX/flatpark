@@ -82,9 +82,9 @@ modules:
         filename: genoffice.deb
         only-arches:
           - x86_64
-        url: https://github.com/genspark-ai/genoffice/releases/download/v0.7.110/genoffice_0.7.110_amd64.deb
-        sha256: b9ebc45a1b257290cf92158f7fe5425719a84e196ff3fb999bdb7b94209f869c
-        size: 131209220
+        url: https://github.com/genspark-ai/genoffice/releases/download/v0.7.204/genoffice_0.7.204_amd64.deb
+        sha256: 08b52d4a3c104873ab4f3d123c278afb46012d98d14c8484c98c370e35b16b72
+        size: 131331068
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
