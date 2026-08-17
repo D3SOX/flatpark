@@ -51,6 +51,9 @@
     <binary>orca</binary>
   </provides>
   <releases>
+    <release version="1.4.184" date="2026-08-17">
+      <description></description>
+    </release>
     <release version="1.4.183" date="2026-08-15">
       <description></description>
     </release>
