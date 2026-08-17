@@ -1,0 +1,23 @@
+id: com.motrix.next
+name: MotrixNext
+summary: Download manager for HTTP, FTP, BitTorrent, Magnet and ED2K links
+website: https://motrix-next.pages.dev
+source_url: https://github.com/AnInsomniacy/motrix-next
+build:
+  manifest: com.motrix.next.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Network
+  tags:
+    - Download
+    - FileTransfer
+    - BitTorrent
+    - aria2
+    - Tauri
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
