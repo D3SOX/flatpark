@@ -1,0 +1,70 @@
+id: social.whalebird.WhalebirdDesktop
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox so the app keeps an internal
+# sandbox (the wrapper runs it via zypak-wrapper) instead of --no-sandbox. The
+# base is a prebuilt ref merged into the app at build time; the app stays
+# self-contained.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: whalebird
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Electron (Chromium) Fediverse client. The prebuilt app bundles Chromium and
+  # its own ffmpeg/ANGLE/SwiftShader; the GTK3, NSS, CUPS, ATK, ALSA and X11
+  # stacks it links come from the runtime (org.freedesktop.Platform 25.08 ships
+  # them — verified against the binary's NEEDED set, 0 missing).
+  - --share=ipc
+  # The whole point of the app: REST + streaming connections to Fediverse
+  # servers, and loading remote avatars, media and custom emoji.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Audio on video and audio attachments in the timeline (the binary links
+  # libasound).
+  - --socket=pulseaudio
+  # Notifications for mentions, boosts, favourites and follows.
+  - --talk-name=org.freedesktop.Notifications
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the binary — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # can't reach — always start as the GUI app rather than as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # No --filesystem grant. Accounts, settings and the local timeline cache live
+  # in the app's own directory, which Flatpak keeps inside the sandbox. The two
+  # paths that touch real files both go through the desktop portal: attaching a
+  # picture to a post uses the file chooser, and "Save Image As" on a timeline
+  # image uses the save dialog, each granting access to just the file picked.
+modules:
+  - name: whalebird
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 whalebird-wrapper /app/bin/whalebird
+      - install -Dm644 social.whalebird.WhalebirdDesktop.desktop /app/share/applications/social.whalebird.WhalebirdDesktop.desktop
+      - install -Dm644 social.whalebird.WhalebirdDesktop.metainfo.xml /app/share/metainfo/social.whalebird.WhalebirdDesktop.metainfo.xml
+      - install -Dm644 social.whalebird.WhalebirdDesktop.png /app/share/icons/hicolor/512x512/apps/social.whalebird.WhalebirdDesktop.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: whalebird.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/h3poteto/whalebird-desktop/releases/download/v6.3.0/Whalebird-6.3.0-linux-amd64.deb
+        sha256: 608d2b031924dd3d4a8e780567d73f17de1b108ca591843c997d288e84385348
+        size: 113985924
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: whalebird-wrapper
+      - type: file
+        path: social.whalebird.WhalebirdDesktop.desktop
+      - type: file
+        path: social.whalebird.WhalebirdDesktop.metainfo.xml
+      - type: file
+        path: social.whalebird.WhalebirdDesktop.png

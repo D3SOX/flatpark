@@ -1,0 +1,23 @@
+id: social.whalebird.WhalebirdDesktop
+name: Whalebird
+summary: Single-column Fediverse client for Mastodon, Pleroma, Friendica and Firefish
+website: https://whalebird.social/
+source_url: https://github.com/h3poteto/whalebird-desktop
+build:
+  manifest: social.whalebird.WhalebirdDesktop.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Network
+  tags:
+    - Fediverse
+    - Mastodon
+    - Pleroma
+    - Firefish
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
