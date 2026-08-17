@@ -1,0 +1,24 @@
+id: com.openai.ChatGPT
+name: ChatGPT
+summary: ChatGPT and Codex desktop app from OpenAI
+website: https://chatgpt.com
+source_url: https://learn.chatgpt.com/docs/linux/linux-app
+build:
+  manifest: com.openai.ChatGPT.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - AI
+    - Chat
+    - Agents
+    - Coding
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: true
+  extra_data_first: true
+  dangerous_permissions:
+    - --talk-name=org.freedesktop.Flatpak

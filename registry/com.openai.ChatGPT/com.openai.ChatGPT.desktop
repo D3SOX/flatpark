@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=ChatGPT
+Comment=ChatGPT by OpenAI
+GenericName=AI assistant
+Keywords=AI;Assistant;Chat;ChatGPT;Codex;OpenAI;LLM;
+Exec=chatgpt %U
+Icon=com.openai.ChatGPT
+Type=Application
+Terminal=false
+StartupNotify=true
+StartupWMClass=ChatGPT
+Categories=Utility;Development;
+MimeType=x-scheme-handler/codex;

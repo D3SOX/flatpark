@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.openai.ChatGPT</id>
+  <name>ChatGPT</name>
+  <summary>ChatGPT and Codex desktop app from OpenAI</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://openai.com/policies/terms-of-use/</project_license>
+  <developer id="com.openai">
+    <name>OpenAI</name>
+  </developer>
+  <url type="homepage">https://chatgpt.com</url>
+  <url type="help">https://learn.chatgpt.com/docs/linux/linux-app</url>
+  <url type="bugtracker">https://help.openai.com/</url>
+  <description>
+    <p>This is a community package of the ChatGPT desktop app, maintained independently and unaffiliated with OpenAI. It repackages OpenAI's official Linux Debian package unmodified.</p>
+    <p>The desktop app puts ChatGPT in a native window and bundles OpenAI's Codex agent, so conversations and coding sessions live in one place. OpenAI ships the Linux build as a preview.</p>
+    <ul>
+      <li>Chat with ChatGPT from a desktop window instead of a browser tab.</li>
+      <li>Run Codex sessions in the same app, with its history kept in the sandbox.</li>
+      <li>Sign in with an existing ChatGPT account.</li>
+    </ul>
+    <p>Permissions: this package grants network, display, GPU, audio, tray and keyring access, plus the two directories Codex owns on the host — ~/.codex for its configuration, credentials and session history, and ~/.cache/codex-runtimes for the runtimes it downloads — so the app and a Codex CLI installed on the host share one login and one runtime cache. Nothing else in your home directory is visible. To let Codex work on a project, grant that directory yourself, one at a time:</p>
+    <p>flatpak override --user --filesystem=~/code/myproject com.openai.ChatGPT</p>
+    <p>Review or undo what you have granted with "flatpak override --user --show com.openai.ChatGPT" and "flatpak override --user --reset com.openai.ChatGPT". Commands the agent runs otherwise execute inside the sandbox, against the runtime's tools rather than your host toolchain. OpenAI's Linux preview does not include Computer Use.</p>
+    <p>One exception, and it is worth understanding before you use the agent on a repository: the runtime ships no git, so this package puts a shim on the path that runs your host's git through flatpak-spawn. That is what makes the agent work with your own ~/.gitconfig, credential helper and SSH keys, and it is also a hole in the sandbox — git runs hooks, aliases, pagers and core.sshCommand, so anything reached that way executes on the host. Close it, at the cost of git support, with:</p>
+    <p>flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.openai.ChatGPT</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Utility</category>
+    <category>Development</category>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>ai</keyword>
+    <keyword>assistant</keyword>
+    <keyword>chat</keyword>
+    <keyword>chatgpt</keyword>
+    <keyword>codex</keyword>
+    <keyword>openai</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#10a37f</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>chatgpt</binary>
+    <mediatype>x-scheme-handler/codex</mediatype>
+  </provides>
+  <launchable type="desktop-id">com.openai.ChatGPT.desktop</launchable>
+  <releases>
+    <release version="26.810.52044" date="2026-08-15">
+      <url>https://learn.chatgpt.com/docs/linux/linux-app</url>
+    </release>
+  </releases>
+</component>
