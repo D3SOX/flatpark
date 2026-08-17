@@ -15,8 +15,10 @@ const t = useTranslations(lang);
 
 const { repo } = loadCatalog();
 const apps = loadApps();
-// Default order: most recently updated first (by upstream release date).
-const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
+// Default order: newest listing first. What's new *here* is the front page's
+// job; "recently updated" tracks upstream release dates, which is a different
+// question and stays one dropdown pick away.
+const ordered = [...apps].sort((a, b) => (b.added || '').localeCompare(a.added || ''));
 ---
 
 <Base
@@ -62,8 +64,8 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
           aria-label={t('apps.sort.label')}
           class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
         >
-          <option value="updated" selected>{t('apps.sort.recent')}</option>
-          <option value="added">{t('apps.sort.added')}</option>
+          <option value="added" selected>{t('apps.sort.added')}</option>
+          <option value="updated">{t('apps.sort.recent')}</option>
           <option value="approved">{t('apps.sort.approved')}</option>
           <option value="name">{t('apps.sort.name')}</option>
         </select>

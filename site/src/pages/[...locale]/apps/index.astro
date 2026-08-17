@@ -14,7 +14,8 @@ const t = useTranslations(lang);
 
 const { repo } = loadCatalog();
 const apps = loadApps();
-const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
+// Default order: newest listing first, matching the home grid.
+const ordered = [...apps].sort((a, b) => (b.added || '').localeCompare(a.added || ''));
 
 // Curated sections present in the catalog, with counts, for the sidebar. The
 // slug drives the filter (and stays out of the reader's language); the label is
@@ -58,8 +59,8 @@ const sections = Object.entries(counts)
             aria-label={t('apps.sort.label')}
             class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
           >
-            <option value="updated" selected>{t('apps.sort.recent')}</option>
-            <option value="added">{t('apps.sort.added')}</option>
+            <option value="added" selected>{t('apps.sort.added')}</option>
+            <option value="updated">{t('apps.sort.recent')}</option>
             <option value="approved">{t('apps.sort.approved')}</option>
             <option value="name">{t('apps.sort.name')}</option>
           </select>
