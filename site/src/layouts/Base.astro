@@ -219,13 +219,15 @@ const searchMeta = {
         if (btn) selectSection(btn);
       }
 
-      // Sort dropdown: reorder the grid in place. ISO data-updated sorts as text.
+      // Sort dropdown: reorder the grid in place. ISO dates sort as text.
       const sortSel = document.querySelector('[data-sort]');
       sortSel?.addEventListener('change', () => {
         const mode = sortSel.value;
         const sorted = cards.slice().sort((a, b) => {
           if (mode === 'name') return (a.dataset.name || '').localeCompare(b.dataset.name || '');
           if (mode === 'updated') return (b.dataset.updated || '').localeCompare(a.dataset.updated || '');
+          // added: newest listing first — when *we* shipped it, not when upstream released
+          if (mode === 'added') return (b.dataset.added || '').localeCompare(a.dataset.added || '');
           // approved: developer-approved (blue shield) first, then name
           const f = (b.dataset.approved === '1' ? 1 : 0) - (a.dataset.approved === '1' ? 1 : 0);
           return f || (a.dataset.name || '').localeCompare(b.dataset.name || '');
