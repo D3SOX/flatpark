@@ -48,6 +48,7 @@
   "apps.sidebar.all": "All",
   "apps.sort.label": "Sort apps",
   "apps.sort.recent": "Sort: Recently updated",
+  "apps.sort.added": "Sort: Recently added",
   "apps.sort.approved": "Sort: Developer-approved",
   "apps.sort.name": "Sort: Name (A–Z)",
   "apps.empty.title": "No matching apps",

@@ -63,6 +63,7 @@ const ordered = [...apps].sort((a, b) => (b.updated || '').localeCompare(a.updat
           class="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold outline-none focus:border-brand"
         >
           <option value="updated" selected>{t('apps.sort.recent')}</option>
+          <option value="added">{t('apps.sort.added')}</option>
           <option value="approved">{t('apps.sort.approved')}</option>
           <option value="name">{t('apps.sort.name')}</option>
         </select>

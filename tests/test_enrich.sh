@@ -72,6 +72,13 @@ maintainer:
   email: test@example.org
 EOF
 
+# The listing date ("Recently added" sort) is read out of git, so the fixture
+# registry has to be a real repo for that field to be exercised at all.
+git -C "$registry" init -q
+git -C "$registry" add -A
+git -C "$registry" -c user.name=test -c user.email=test@example.org -c commit.gpgsign=false \
+    commit -qm "add test app"
+
 data="$tmp/data"
 REGISTRY_DIR="$registry" DATA_DIR="$data" "$ROOT/scripts/gen-apps-json.sh"
 FLATPARK_DATA_DIR="$data" node "$ROOT/site/tools/enrich.mjs"
@@ -105,6 +112,12 @@ assert_contains "$out" "\"key\": \"share.network\""
 assert_contains "$out" "\"key\": \"socket.wayland\""
 assert_contains "$out" "\"key\": \"device.dri\""
 assert_contains "$out" "\"section\": \"utilities\""
+# listing date: the commit that first added the app dir, independent of the
+# release date that drives "updated" (2026-01-01 here)
+assert_ok node -e "
+  const a = JSON.parse(require('fs').readFileSync('$out','utf8')).added;
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(a || '')) throw new Error('bad added: ' + a);
+"
 # AppStream ships translations inline as xml:lang siblings. FlatPark renders
 # app content in the source language, so every one of them must be absent: a
 # leaked translated <p> concatenates onto the English prose, and a translated

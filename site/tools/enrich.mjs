@@ -51,6 +51,28 @@ function gitUpdated(srcDir) {
   }
 }
 
+// When this app first appeared in the registry, for the "Recently added" sort.
+// The oldest commit that added a file under the app's dir is the moment it was
+// listed; upstream release dates say nothing about that, which is exactly why
+// this is a separate axis from `updated`. Best-effort like everything here.
+function gitAdded(srcDir) {
+  if (!srcDir || !existsSync(srcDir)) return '';
+  try {
+    const lines = execSync('git log --diff-filter=A --format=%cI -- .', {
+      cwd: srcDir,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim()
+      .split('\n')
+      .filter(Boolean);
+    // git logs newest first, so the listing date is the last line.
+    return lines[lines.length - 1] || '';
+  } catch {
+    return '';
+  }
+}
+
 const dataDir = process.env.FLATPARK_DATA_DIR || 'public';
 const appsDir = join(dataDir, 'apps');
 const shotsDir = join(dataDir, 'screenshots');
@@ -490,6 +512,8 @@ async function enrichOne(file) {
   enrichedIds.add(out.id);
   // Prefer upstream release date; fall back to registry commit time.
   out.updated = out.releases?.[0]?.date || gitUpdated(srcDir) || '';
+  // Listing date — when we added the app, never an upstream date.
+  out.added = gitAdded(srcDir);
 
   writeFileSync(path, JSON.stringify(out, null, 2) + '\n');
   return out.id;
