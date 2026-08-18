@@ -38,6 +38,7 @@ that PR link in the table — the PR itself is the evidence.
 | zux | `io.github.hrzlgnm.zux` | Approved by construction — submitted and maintained by its own developer ([flatpark#199](https://github.com/flatpark/flatpark/pull/199)) | 2026-08 |
 | Impasto | `com.github.zbcoding.Impasto` | Approved by construction — submitted and maintained by its own developer ([flatpark#200](https://github.com/flatpark/flatpark/pull/200)) | 2026-08 |
 | Pi Agent | `io.github.abcwyc.pi-agent-desktop` | [abcwyc/pi-agent-desktop#21 (comment)](https://github.com/abcwyc/pi-agent-desktop/issues/21#issuecomment-5305086844); upstream also added FlatPark install docs ([README.md](https://github.com/abcwyc/pi-agent-desktop/blob/main/README.md), [README.zh-CN.md](https://github.com/abcwyc/pi-agent-desktop/blob/main/README.zh-CN.md)) | 2026-08-16 |
+| Motrix Next | `com.motrix.next` | [AnInsomniacy/motrix-next#522 (comment)](https://github.com/AnInsomniacy/motrix-next/issues/522#issuecomment-5322927943) — "没问题的，我后续会在 readme 添加为官方安装办法" | 2026-08-18 |
 
 ## Not approved
 
