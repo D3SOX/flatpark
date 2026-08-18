@@ -1,0 +1,81 @@
+id: ai.cumora.Cumora
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron app: use the Electron base app, which ships zypak. zypak redirects
+# Chromium's SUID sandbox onto the Flatpak sandbox so the app keeps an internal
+# sandbox (the wrapper runs it via zypak-wrapper) instead of --no-sandbox. The
+# base also carries libdbusmenu-glib, which Electron's tray dlopens for the
+# tray context menu and the Freedesktop runtime does not ship. The base is a
+# prebuilt ref merged into the app at build time; the official upstream
+# application tree is fetched as extra-data and left unmodified.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: cumora
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Team chat client. The official Debian package bundles the Chromium/Electron
+  # application tree; the GTK3, NSS, ATK, CUPS, DRM/GBM and X11 stacks it links
+  # come from the Freedesktop runtime (verified against the binary's NEEDED set,
+  # 0 missing beyond the libffmpeg.so it ships itself).
+  - --share=ipc
+  # Chat, sync and sign-in. Sign-in also needs the host loopback: the app opens
+  # the browser through the portal and the provider redirects back to a small
+  # HTTP server it runs on 127.0.0.1:47823, which only works while the sandbox
+  # shares the host network namespace.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Chromium compositing and GPU rasterisation.
+  - --device=dri
+  # The message-arrival sound the app plays from its own bundle.
+  - --socket=pulseaudio
+  # Tray icon: closing the window hides Cumora to the tray, so without this the
+  # running app becomes unreachable. No --own-name is needed. This Electron
+  # build registers its item with the watcher under its own unique connection
+  # name (":1.NNN/StatusNotifierItem"), not under a well-known
+  # org.kde.StatusNotifierItem-<pid>-<n> name, so there is no name to grant —
+  # verified against the watcher's RegisteredStatusNotifierItems with no grant
+  # in place, and the icon shows up in the panel either way.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Strip a leaked ELECTRON_RUN_AS_NODE from the sandbox env so the binary — and
+  # zypak's spawned child/zygote processes, which the wrapper's own `unset`
+  # can't reach — always start as the GUI app rather than as plain Node.
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # Deliberately not granted by default:
+  #   --filesystem=home / =host  -> attachments are picked and saved through the
+  #                                 desktop portal, so no directory is needed
+  #   --device=all               -> --device=dri covers the GPU alone; the app
+  #                                 uses no camera or microphone
+  #   --talk-name=org.freedesktop.secrets -> the app does not use safeStorage
+modules:
+  - name: cumora
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 cumora-wrapper /app/bin/cumora
+      - install -Dm644 ai.cumora.Cumora.desktop /app/share/applications/ai.cumora.Cumora.desktop
+      - install -Dm644 ai.cumora.Cumora.metainfo.xml /app/share/metainfo/ai.cumora.Cumora.metainfo.xml
+      - install -Dm644 ai.cumora.Cumora.png /app/share/icons/hicolor/512x512/apps/ai.cumora.Cumora.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: cumora-amd64.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/yetone/cumora-releases/releases/download/v0.1.64/cumora_0.1.64_amd64.deb
+        sha256: 297eb66462abd1d9520f64ed16257acec6f3d4e0b825f0dce874dd99fcef097b
+        size: 109123802
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: cumora-wrapper
+      - type: file
+        path: ai.cumora.Cumora.desktop
+      - type: file
+        path: ai.cumora.Cumora.metainfo.xml
+      - type: file
+        path: ai.cumora.Cumora.png

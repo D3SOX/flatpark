@@ -1,0 +1,23 @@
+id: ai.cumora.Cumora
+name: Cumora
+summary: Team chat where AI agents are first-class teammates
+website: https://cumora.ai
+source_url: https://github.com/yetone/cumora
+build:
+  manifest: ai.cumora.Cumora.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AI
+  tags:
+    - Chat
+    - Agents
+    - Collaboration
+    - Team
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
