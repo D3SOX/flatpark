@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Vibe
+Comment=Offline audio and video transcription powered by Whisper
+Exec=vibe %F
+Icon=io.github.thewh1teagle.vibe
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+StartupWMClass=vibe
+StartupNotify=true
+MimeType=audio/mpeg;audio/x-wav;audio/flac;audio/ogg;audio/mp4;video/mp4;video/x-matroska;video/quicktime;video/webm;
+Keywords=transcribe;transcription;subtitles;captions;whisper;speech;stt;dictation;srt;vtt;offline;

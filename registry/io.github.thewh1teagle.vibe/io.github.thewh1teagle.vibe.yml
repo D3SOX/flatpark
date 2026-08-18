@@ -1,0 +1,76 @@
+id: io.github.thewh1teagle.vibe
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: vibe
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Tauri/WebKitGTK front end driving a bundled whisper.cpp engine ("sona").
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Transcription runs on the GPU through sona's Vulkan backend; without a
+  # render node it enumerates no device and falls back to the CPU. dri also
+  # backs accelerated WebKit rendering.
+  - --device=dri
+  # Recording and live transcription read from a capture device.
+  - --socket=pulseaudio
+  # Speech models are downloaded on first use, and the optional URL input and
+  # LLM post-processing are network features.
+  - --share=network
+  # Media to transcribe is read from the three standard media locations, and
+  # transcripts are written back beside it. Any other location is granted by
+  # the user with `flatpak override` (commands in the app description); models
+  # and application data live in the private per-app directory and need no
+  # grant of their own.
+  - --filesystem=xdg-videos
+  - --filesystem=xdg-music
+  - --filesystem=xdg-download
+modules:
+  # The Vibe binary has libxdo.so.3 in DT_NEEDED — enigo links it to type
+  # transcribed text into the focused window in dictation mode — and the GNOME
+  # runtime does not ship it, so the app cannot start without it. Consume
+  # FlatPark's prebuilt libxdo from https://github.com/flatpark/prebuilt rather
+  # than compiling xdotool here; the tag's manifest records the exact source and
+  # pin. That stack is deliberately the xdotool 3.x series, whose soname is
+  # libxdo.so.3 (4.x installs libxdo.so.4). The archive is built against
+  # org.gnome.Sdk//50, so migrate it explicitly when the catalog runtime major
+  # changes.
+  - name: libxdo
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/libxdo-v1/libxdo-libxdo-v1-gnome-50-x86_64.tar.xz
+        sha256: 2bdb0654cea2058bcbd4057fd3c256325103efff91a1b5d1d3de8ff49b71241b
+  - name: vibe
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 vibe-wrapper /app/bin/vibe
+      - install -Dm644 io.github.thewh1teagle.vibe.desktop /app/share/applications/io.github.thewh1teagle.vibe.desktop
+      - install -Dm644 io.github.thewh1teagle.vibe.metainfo.xml /app/share/metainfo/io.github.thewh1teagle.vibe.metainfo.xml
+      - install -Dm644 io.github.thewh1teagle.vibe.png /app/share/icons/hicolor/512x512/apps/io.github.thewh1teagle.vibe.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: vibe.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/thewh1teagle/vibe/releases/download/v3.0.23/vibe_3.0.23_amd64.deb
+        sha256: 4e074065236dda5cf6d716b588c7391ed5d2abd741c0c05fcb770f5b86938735
+        size: 40529332
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: vibe-wrapper
+      - type: file
+        path: io.github.thewh1teagle.vibe.desktop
+      - type: file
+        path: io.github.thewh1teagle.vibe.metainfo.xml
+      - type: file
+        path: io.github.thewh1teagle.vibe.png

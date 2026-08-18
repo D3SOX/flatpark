@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.thewh1teagle.vibe</id>
+  <name>Vibe</name>
+  <summary>Offline audio and video transcription powered by Whisper</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.thewh1teagle">
+    <name>thewh1teagle</name>
+  </developer>
+  <url type="homepage">https://thewh1teagle.github.io/vibe/</url>
+  <url type="bugtracker">https://github.com/thewh1teagle/vibe/issues</url>
+  <url type="vcs-browser">https://github.com/thewh1teagle/vibe</url>
+  <description>
+    <p>This is a community package of Vibe, maintained independently. It repackages the official upstream build unmodified.</p>
+    <p>Vibe transcribes audio and video on your own machine. It runs a bundled Whisper engine locally, so recordings and their transcripts never leave the computer, and transcription keeps working with no network connection once a model has been downloaded.</p>
+    <ul>
+      <li>Transcribe audio and video files in a wide range of languages</li>
+      <li>Batch-transcribe a whole folder in one run</li>
+      <li>Record from a capture device and transcribe as you go</li>
+      <li>Save transcripts as SRT, VTT, plain text, Markdown, CSV, JSON, HTML, PDF or DOCX</li>
+      <li>Optional speaker diarization, voice-activity detection and summarizing</li>
+      <li>Optionally fetch the audio for a media URL and transcribe that</li>
+      <li>Runs the transcription model on the GPU through Vulkan, falling back to the CPU</li>
+    </ul>
+    <p>Speech models are not bundled: on first use Vibe downloads the model you pick — the default is roughly 1.6 GB — into its private per-app directory, so the first run needs network access and free disk space. Models, settings and logs stay in that private directory and need no permission of their own.</p>
+    <p>Fetching audio from a URL is an optional feature: the first time you use it, Vibe downloads yt-dlp from its official releases into the same private directory and runs it from there.</p>
+    <p>By default this package can read and write files in your Videos, Music and Downloads directories. To transcribe media kept elsewhere, grant that location: <code>flatpak override --user --filesystem=/path/to/media io.github.thewh1teagle.vibe</code>. If you prefer to expose your whole home directory, opt in with <code>flatpak override --user --filesystem=home io.github.thewh1teagle.vibe</code>. Remove custom grants with <code>flatpak override --user --reset io.github.thewh1teagle.vibe</code>.</p>
+    <p>The bundled transcription engine is built for x86-64 processors with AVX2 support. Dictation, which types transcribed text into whichever window has focus, needs an X11 session; everything else works on Wayland.</p>
+    <p>Install application updates through Flatpak; the built-in updater cannot replace the read-only Flatpak application.</p>
+  </description>
+  <launchable type="desktop-id">io.github.thewh1teagle.vibe.desktop</launchable>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Audio</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>transcribe</keyword>
+    <keyword>transcription</keyword>
+    <keyword>subtitles</keyword>
+    <keyword>captions</keyword>
+    <keyword>whisper</keyword>
+    <keyword>speech</keyword>
+    <keyword>dictation</keyword>
+    <keyword>srt</keyword>
+    <keyword>offline</keyword>
+  </keywords>
+  <content_rating type="oars-1.1" />
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>vibe</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Transcribing a file in Vibe</caption>
+      <image>https://raw.githubusercontent.com/thewh1teagle/vibe/main/website/public/preview.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Batch-transcribing a folder</caption>
+      <image>https://raw.githubusercontent.com/thewh1teagle/vibe/main/website/public/feature-batch-transcribe.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Choosing the transcription device</caption>
+      <image>https://raw.githubusercontent.com/thewh1teagle/vibe/main/website/public/feature-gpu.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Exporting transcripts in several formats</caption>
+      <image>https://raw.githubusercontent.com/thewh1teagle/vibe/main/website/public/feature-formats.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="3.0.23" date="2026-07-15">
+      <description></description>
+    </release>
+  </releases>
+</component>
