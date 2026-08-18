@@ -1,0 +1,105 @@
+id: com.calibre_ebook.calibre
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+command: calibre
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # calibre's Linux build is fully self-contained: it brings its own Python,
+  # Qt 6, QtWebEngine, ffmpeg, OpenSSL, poppler, libmtp and espeak-ng. Only the
+  # display, GL, fontconfig, NSS, X11/Wayland and audio stacks come from the
+  # runtime (org.freedesktop.Platform 25.08 ships them — verified against the
+  # bundle's NEEDED set; the handful it does not cover are optional Qt plugins
+  # for the eglfs/linuxfb platforms and the flite/speech-dispatcher text-to-
+  # speech backends, none of which are used on a normal desktop session, where
+  # calibre's own bundled espeak-ng and piper engines drive Read aloud).
+  - --share=ipc
+  # Metadata downloads, news recipe fetching, the built-in store and the
+  # content server. calibre is otherwise local-first: the library is a plain
+  # directory of files with a SQLite index.
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Read aloud (text-to-speech) in the E-book viewer, and audio in EPUBs.
+  - --socket=pulseaudio
+  # QtWebEngine renders the viewer, the editor preview and the conversion
+  # pipeline's page layout.
+  - --device=dri
+  # calibre manages a *library*: a directory of book files plus its metadata
+  # database, created at ~/Calibre Library on first run and freely relocatable
+  # by the user. Books are added from, and saved back to, arbitrary places in
+  # the home directory, and the paths are stored absolute in the database, so
+  # the access has to be persistent rather than per-file through the portal.
+  # Declared in policy.dangerous_permissions. Deliberately NOT --filesystem=host;
+  # a library on an external drive or another mount is an opt-in override
+  # documented in the metainfo.
+  - --filesystem=home
+  # Follow the Qt/KDE colour scheme and font settings when the host sets them.
+  - --filesystem=xdg-config/kdeglobals:ro
+  # Job completion / error notifications from the main window.
+  - --talk-name=org.freedesktop.Notifications
+  # calibre's optional system tray icon (Preferences -> Look & feel).
+  - --talk-name=org.kde.StatusNotifierWatcher
+modules:
+  - name: calibre
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 calibre-wrapper /app/bin/calibre
+      # Every calibre entry point runs through the same wrapper, which
+      # dispatches on the name it was invoked under. These are the launchers
+      # the exported desktop entries use plus the command-line tools worth
+      # reaching with `flatpak run --command=<name> com.calibre_ebook.calibre`.
+      - for c in ebook-viewer ebook-edit ebook-convert ebook-meta ebook-polish
+        calibredb calibre-server calibre-smtp calibre-debug calibre-customize
+        fetch-ebook-metadata lrfviewer web2disk; do ln -s calibre "/app/bin/$c";
+        done
+      - install -Dm644 com.calibre_ebook.calibre.desktop /app/share/applications/com.calibre_ebook.calibre.desktop
+      - install -Dm644 com.calibre_ebook.calibre.ebook-viewer.desktop /app/share/applications/com.calibre_ebook.calibre.ebook-viewer.desktop
+      - install -Dm644 com.calibre_ebook.calibre.ebook-edit.desktop /app/share/applications/com.calibre_ebook.calibre.ebook-edit.desktop
+      - install -Dm644 com.calibre_ebook.calibre.metainfo.xml /app/share/metainfo/com.calibre_ebook.calibre.metainfo.xml
+      # calibre's own MIME definitions (LRF/LRS, Mobipocket, Topaz, AZW3, ...)
+      # so the exported entries can actually match those file types on the host.
+      - install -Dm644 com.calibre_ebook.calibre.mime.xml /app/share/mime/packages/com.calibre_ebook.calibre.xml
+      - install -Dm644 com.calibre_ebook.calibre.png /app/share/icons/hicolor/256x256/apps/com.calibre_ebook.calibre.png
+      - install -Dm644 com.calibre_ebook.calibre.ebook-viewer.png /app/share/icons/hicolor/256x256/apps/com.calibre_ebook.calibre.ebook-viewer.png
+      - install -Dm644 com.calibre_ebook.calibre.ebook-edit.png /app/share/icons/hicolor/256x256/apps/com.calibre_ebook.calibre.ebook-edit.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: calibre.txz
+        only-arches:
+          - x86_64
+        url: https://github.com/kovidgoyal/calibre/releases/download/v9.13.0/calibre-9.13.0-x86_64.txz
+        sha256: d664fe74953463f1b679945a5460234b61cbf539da48fc78f2111ff8d9503cc0
+        size: 192554776
+      - type: extra-data
+        filename: calibre-arm64.txz
+        only-arches:
+          - aarch64
+        url: https://github.com/kovidgoyal/calibre/releases/download/v9.13.0/calibre-9.13.0-arm64.txz
+        sha256: a700fd765309b5b0fe5725ad907159fe77832f4a78fee59e34eeb31b8002cb7a
+        size: 180139096
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: calibre-wrapper
+      - type: file
+        path: com.calibre_ebook.calibre.desktop
+      - type: file
+        path: com.calibre_ebook.calibre.ebook-viewer.desktop
+      - type: file
+        path: com.calibre_ebook.calibre.ebook-edit.desktop
+      - type: file
+        path: com.calibre_ebook.calibre.metainfo.xml
+      - type: file
+        path: com.calibre_ebook.calibre.mime.xml
+      - type: file
+        path: com.calibre_ebook.calibre.png
+      - type: file
+        path: com.calibre_ebook.calibre.ebook-viewer.png
+      - type: file
+        path: com.calibre_ebook.calibre.ebook-edit.png

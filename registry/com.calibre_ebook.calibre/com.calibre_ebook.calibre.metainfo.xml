@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.calibre_ebook.calibre</id>
+  <name>calibre</name>
+  <summary>The one stop solution to all your e-book needs</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <developer id="com.calibre_ebook">
+    <name>Kovid Goyal</name>
+  </developer>
+  <url type="homepage">https://calibre-ebook.com/</url>
+  <url type="bugtracker">https://bugs.launchpad.net/calibre</url>
+  <url type="help">https://manual.calibre-ebook.com/</url>
+  <url type="donation">https://calibre-ebook.com/donate</url>
+  <url type="vcs-browser">https://github.com/kovidgoyal/calibre</url>
+  <description>
+    <p>This is a community package of calibre, maintained independently and unaffiliated with the calibre project. It repackages the official upstream Linux binary bundle unmodified, and follows upstream releases automatically.</p>
+    <p>calibre is a free and open-source e-book library manager. You can use it to catalog your books, fetch metadata for them automatically, convert them from and to all the various e-book formats, send them to your e-book reader devices, read the books on your computer, edit the books in a dedicated e-book editor and even make them available over the network with the built-in Content server. You can also download news and periodicals in e-book format from over a thousand different news and magazine websites.</p>
+    <ul>
+      <li>Library management: organise a collection of any size with custom columns, tags, saved searches and virtual libraries.</li>
+      <li>Format conversion between EPUB, AZW3, MOBI, PDF, DOCX, FB2, HTMLZ, TXT and more, with a full-text search index over the whole library.</li>
+      <li>E-book viewer with annotations, highlights, bookmarks, dictionary lookup and Read aloud text-to-speech.</li>
+      <li>E-book editor for EPUB and AZW3, with live preview, spell check, a report of errors and automated cleanup tools.</li>
+      <li>Content server: read and manage the library from a browser or another device on the network.</li>
+      <li>News download: build periodicals from over a thousand recipes and read them like any other book.</li>
+    </ul>
+    <p>The E-book viewer and the E-book editor are exported as their own launchers. calibre's command-line tools are available too, for example <code>flatpak run --command=ebook-convert com.calibre_ebook.calibre book.epub book.azw3</code> and the same for calibredb, ebook-meta, ebook-polish, calibre-server, fetch-ebook-metadata and calibre-debug.</p>
+    <p>Permissions: this package grants your home directory, because that is where a calibre library lives — it is created at ~/Calibre Library on first run, holds the book files themselves, and records their paths absolutely, so it needs persistent access rather than one file at a time through the portal. Access outside your home directory is not granted. A few optional capabilities are not granted by default; enable the ones you need with <code>flatpak override</code>:</p>
+    <ul>
+      <li>Send books to an e-reader over USB or MTP (Kindle, Kobo, PocketBook, ...): <code>flatpak override --user --device=all --system-talk-name=org.freedesktop.UDisks2 com.calibre_ebook.calibre</code></li>
+      <li>Keep the library on an external drive or another mount point: <code>flatpak override --user --filesystem=/run/media/$USER com.calibre_ebook.calibre</code> (use the path your system mounts removable media under)</li>
+    </ul>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Office</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>ebook</keyword>
+    <keyword>epub</keyword>
+    <keyword>kindle</keyword>
+    <keyword>library</keyword>
+    <keyword>reader</keyword>
+    <keyword>converter</keyword>
+  </keywords>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>calibre</binary>
+  </provides>
+  <launchable type="desktop-id">com.calibre_ebook.calibre.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://lh4.googleusercontent.com/-bNE1hc_3pIc/UvHLwKPGBPI/AAAAAAAAASA/8oavs_c6xoU/w1408-h792-no/main-default.png</image>
+      <caption>The calibre library view</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://lh4.googleusercontent.com/-Zu2httSKABE/UvHMYK30JJI/AAAAAAAAATg/dQTQUjBvV5s/w1408-h792-no/main-grid.png</image>
+      <caption>Browsing the library as a cover grid</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://lh3.googleusercontent.com/-_trYUjU_BaY/UvHMYSdKhlI/AAAAAAAAATc/auPA3gyXc6o/w1408-h792-no/main-flow.png</image>
+      <caption>Browsing the library in cover flow</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="9.13.0" date="2026-08-07">
+      <url>https://github.com/kovidgoyal/calibre/releases/tag/v9.13.0</url>
+    </release>
+    <release version="9.12.0" date="2026-07-31">
+      <url>https://github.com/kovidgoyal/calibre/releases/tag/v9.12.0</url>
+    </release>
+    <release version="9.11.0" date="2026-07-03">
+      <url>https://github.com/kovidgoyal/calibre/releases/tag/v9.11.0</url>
+    </release>
+  </releases>
+</component>
