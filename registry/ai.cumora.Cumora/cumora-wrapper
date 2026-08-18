@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+
+# Cumora is staged by apply_extra to /app/extra/cumora, and the resolved binary
+# name is recorded in app.env at install time. Run it through zypak-wrapper
+# (from org.electronjs.Electron2.BaseApp): zypak redirects Chromium's SUID
+# sandbox onto the Flatpak sandbox, so renderer and GPU processes stay isolated
+# without the Debian package's chrome-sandbox postinst and without --no-sandbox.
+#
+# Keep this wrapper thin so the upstream application tree stays unmodified:
+# display, file dialogs and the Chromium sandbox are handled by portals/zypak
+# and the manifest permissions.
+[ -f /app/extra/app.env ] || {
+  echo "cumora: /app/extra/app.env is missing, reinstall the app" >&2
+  exit 1
+}
+# shellcheck source=/dev/null  # written by apply_extra at install time
+. /app/extra/app.env
+
+# Defensively clear ELECTRON_RUN_AS_NODE: if it leaks in from the launching
+# environment (e.g. a terminal inside VS Code/Electron), the binary would start
+# as plain Node instead of the GUI app.
+unset ELECTRON_RUN_AS_NODE
+
+# --enable-wayland-ime: without it a Wayland session gets no input-method
+# window, which breaks CJK input in the message composer.
+exec zypak-wrapper "$APP_BIN" --ozone-platform-hint=auto --enable-wayland-ime "$@"

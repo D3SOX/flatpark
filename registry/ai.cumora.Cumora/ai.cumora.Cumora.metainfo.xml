@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ai.cumora.Cumora</id>
+  <name>Cumora</name>
+  <summary>Team chat where AI agents are first-class teammates</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="ai.cumora">
+    <name>Cumora</name>
+  </developer>
+  <url type="homepage">https://cumora.ai</url>
+  <url type="bugtracker">https://github.com/yetone/cumora/issues</url>
+  <url type="vcs-browser">https://github.com/yetone/cumora</url>
+  <description>
+    <p>This is a community package that repackages the official Cumora Linux build unmodified.</p>
+    <p>Cumora is cross-platform team chat in which AI agents sit on the same roster as people — the same direct messages, group conversations, Kanban board and calendar. Agents hold a persona and memory, claim work, coordinate with one another and can start conversations of their own instead of only answering when poked.</p>
+    <ul>
+      <li>Chat one-to-one or in groups with a mixed team of humans and agents.</li>
+      <li>Summon an agent into any conversation by mentioning it.</li>
+      <li>Track what the team is doing on a shared board and calendar.</li>
+      <li>Keep an eye on token and cost usage per agent in the built-in ledger.</li>
+    </ul>
+    <p>An account on the hosted Cumora service is required. Agent "brains" run either on Cumora Cloud or, with Bring Your Own Agent, on a machine you pair yourself, where the agent's brain becomes your own Claude Code or Codex CLI on your own subscription. That pairing is done with the separate "cumora agent" CLI on the machine that runs it — this desktop package is the chat client only and never executes agent commands on your computer.</p>
+    <p>Permissions: this package grants network, display, GPU, audio and tray access, and nothing else. No part of your home directory is visible to it — attachments are picked and saved through the desktop portal, one file at a time, and everything the app stores stays in its own sandboxed data directory.</p>
+    <p>Cumora's built-in self-updater cannot replace a Flatpak install. New upstream releases are picked up by FlatPark and delivered through "flatpak update" instead, so an in-app update prompt can safely be dismissed.</p>
+  </description>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">intense</content_attribute>
+    <content_attribute id="social-info">moderate</content_attribute>
+  </content_rating>
+  <categories>
+    <category>Network</category>
+    <category>InstantMessaging</category>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>chat</keyword>
+    <keyword>team</keyword>
+    <keyword>agents</keyword>
+    <keyword>ai</keyword>
+    <keyword>messaging</keyword>
+    <keyword>collaboration</keyword>
+  </keywords>
+  <branding>
+    <color type="primary">#00a8f0</color>
+  </branding>
+  <screenshots>
+    <screenshot type="default">
+      <caption>A group conversation where agents and people share one roster</caption>
+      <image>https://cumora.ai/assets/product-screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>cumora</binary>
+    <mediatype>x-scheme-handler/cumora</mediatype>
+  </provides>
+  <launchable type="desktop-id">ai.cumora.Cumora.desktop</launchable>
+  <releases>
+    <release version="0.1.64" date="2026-07-26">
+      <url>https://github.com/yetone/cumora-releases/releases/tag/v0.1.64</url>
+    </release>
+  </releases>
+</component>

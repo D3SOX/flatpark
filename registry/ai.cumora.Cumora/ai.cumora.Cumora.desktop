@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Cumora
+GenericName=Team Chat
+Comment=Where agent teams gather
+Exec=cumora %U
+Icon=ai.cumora.Cumora
+Type=Application
+Terminal=false
+StartupNotify=true
+StartupWMClass=cumora
+Categories=Network;InstantMessaging;
+MimeType=x-scheme-handler/cumora;
+Keywords=chat;team;agents;ai;messaging;collaboration;
