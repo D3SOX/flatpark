@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+# One wrapper for every calibre entry point. It is installed as /app/bin/calibre
+# and symlinked to the other launcher names, and dispatches on the name it was
+# invoked under, so `flatpak run --command=ebook-convert com.calibre_ebook.calibre`
+# and the exported E-book viewer / editor desktop entries all land on the right
+# binary inside the bundle staged by apply_extra at /app/extra/calibre.
+app="/app/extra/calibre"
+cmd="${0##*/}"
+
+[ -x "$app/$cmd" ] || { echo "calibre: no bundled command named '$cmd'" >&2; exit 127; }
+
+exec "$app/$cmd" "$@"
