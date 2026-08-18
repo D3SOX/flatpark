@@ -53,6 +53,9 @@
   </provides>
   <launchable type="desktop-id">com.openai.ChatGPT.desktop</launchable>
   <releases>
+    <release version="26.814.41407">
+      <description></description>
+    </release>
     <release version="26.810.52044" date="2026-08-15">
       <url>https://learn.chatgpt.com/docs/linux/linux-app</url>
     </release>
