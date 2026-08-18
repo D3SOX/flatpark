@@ -1,0 +1,24 @@
+id: io.github.thewh1teagle.vibe
+name: Vibe
+summary: Offline audio and video transcription powered by Whisper
+website: https://thewh1teagle.github.io/vibe/
+source_url: https://github.com/thewh1teagle/vibe
+build:
+  manifest: io.github.thewh1teagle.vibe.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AudioVideo
+  tags:
+    - Transcription
+    - Subtitles
+    - Whisper
+    - Speech to Text
+    - Offline
+    - Tauri
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
