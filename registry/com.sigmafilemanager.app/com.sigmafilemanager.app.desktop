@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Sigma File Manager
+Comment=Modern file manager with global search, tabs, split view and LAN sharing
+Exec=sigma-file-manager %F
+Icon=com.sigmafilemanager.app
+Terminal=false
+Categories=Utility;FileTools;FileManager;
+StartupWMClass=sigma-file-manager
+Keywords=file;manager;explorer;browser;folder;search;

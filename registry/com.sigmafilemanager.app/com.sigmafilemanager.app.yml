@@ -1,0 +1,88 @@
+id: com.sigmafilemanager.app
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: sigma-file-manager
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  # Tauri v2 / WebKitGTK file manager.
+  # dri for hardware-accelerated WebKit rendering.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # The LAN sharing feature serves selected files over HTTP to other devices on
+  # the network, and the extension store is fetched over the network too.
+  - --share=network
+  # Audio and video files preview inside the WebKit view.
+  - --socket=pulseaudio
+  # System tray (Tauri tray-icon). No --own-name is needed: the
+  # libayatana-appindicator build this app links registers its item with the
+  # watcher under its own unique connection name
+  # (":1.195/org/ayatana/NotificationItem/tray_icon_tray_app_main" in a live
+  # session) instead of claiming a well-known
+  # org.kde.StatusNotifierItem-<pid>-<n>, so there is no name to grant and none
+  # of the PID-2 contention the older bus-name path suffers from. Verified
+  # against the watcher's RegisteredStatusNotifierItems with no grant in place.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+  # Browsing a directory tree is the whole point of the app: it lists paths
+  # directly (tokio::fs / walkdir) and indexes them for its global search, and
+  # the document portal can hand over a file the user picked once but cannot
+  # back a browsable tree. Without a --filesystem grant the app would show only
+  # ~/.var/app/com.sigmafilemanager.app and look like an empty home. Grant home
+  # plus the three usual mount points for removable and secondary drives, which
+  # the drive list on the home page reads. Deliberately NOT --filesystem=host:
+  # the rest of the host filesystem (/etc, /opt, /srv, the real /usr) stays out
+  # of reach unless the user opts in, and the metainfo documents that override.
+  - --filesystem=home
+  - --filesystem=/media
+  - --filesystem=/run/media
+  - --filesystem=/mnt
+modules:
+  # The Tauri tray-icon dlopens libayatana-appindicator at startup and PANICS if
+  # it is missing — and the GNOME runtime does not ship it, so the app cannot
+  # even start without it.
+  # Prebuilt ayatana tray stack (libdbusmenu, ayatana-ido, libayatana-indicator,
+  # libayatana-appindicator) from https://github.com/flatpark/prebuilt, built
+  # against org.gnome.Sdk//50; the tag's manifest records the exact sources,
+  # pins and patches. One pinned archive instead of five source builds per app,
+  # and no launchpad.net downloads at build time.
+  - name: ayatana-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
+    sources:
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
+        sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
+  - name: sigma-file-manager
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 sigma-file-manager-wrapper /app/bin/sigma-file-manager
+      - install -Dm644 com.sigmafilemanager.app.desktop /app/share/applications/com.sigmafilemanager.app.desktop
+      - install -Dm644 com.sigmafilemanager.app.metainfo.xml /app/share/metainfo/com.sigmafilemanager.app.metainfo.xml
+      - install -Dm644 com.sigmafilemanager.app.png /app/share/icons/hicolor/512x512/apps/com.sigmafilemanager.app.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: sigma-file-manager.deb
+        only-arches:
+          - x86_64
+        url: https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v2.2.0/Sigma-File-Manager-2.2.0-linux.deb
+        sha256: 31f7ab37f472d419a2c4bd95c49e7cc7e17994a48d4e3ef022cfa54bb3c2dff1
+        size: 22945030
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: sigma-file-manager-wrapper
+      - type: file
+        path: com.sigmafilemanager.app.desktop
+      - type: file
+        path: com.sigmafilemanager.app.metainfo.xml
+      - type: file
+        path: com.sigmafilemanager.app.png
