@@ -1,0 +1,21 @@
+id: dk.nikse.subtitleedit
+name: Subtitle Edit
+summary: Free, open source subtitle editor with waveform and video preview
+website: https://www.nikse.dk/subtitleedit
+source_url: https://github.com/SubtitleEdit/subtitleedit
+build:
+  manifest: dk.nikse.subtitleedit.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AudioVideo
+  tags:
+    - Video
+    - Subtitles
+    - Editor
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []

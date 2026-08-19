@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+# Self-contained single-file .NET publish: it unpacks itself at startup and
+# needs a writable, persistent extract directory.
+export DOTNET_BUNDLE_EXTRACT_BASE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/subtitleedit/dotnet-bundle"
+mkdir -p "$DOTNET_BUNDLE_EXTRACT_BASE_DIR"
+
+# Subtitle Edit dlopen()s libmpv.so.2 for the video preview; it lives in /app/lib.
+export LD_LIBRARY_PATH="/app/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+exec /app/extra/app/SubtitleEdit "$@"
