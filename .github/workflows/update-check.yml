@@ -1,7 +1,7 @@
 # Scheduled upstream-update detection. Runs each app's update resolver, recomputes
 # the extra-data pins, and opens a PR when anything moved. No signing key or R2
-# creds here — it only reads public URLs and opens a PR; a human merges it, which
-# triggers publish.yml.
+# creds here — it only reads public URLs and opens a PR, which it then merges
+# itself (see the auto-merge block below) and dispatches publish.yml for.
 #
 # This is the pull-mode safety net. The fast path is release-dispatch.yml:
 # upstream CI pings us on release and a single-app PR opens within minutes.
@@ -19,6 +19,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write        # dispatch publish.yml after the auto-merge
 
 jobs:
   check:
@@ -79,13 +80,20 @@ jobs:
           echo "changed=${kept# }" >> "$GITHUB_ENV"
           echo "held=${held# }" >> "$GITHUB_ENV"
           echo "held back: ${held:-<none>}"
-      - name: Open / update PR if pins changed
+      - name: Open / update PR if pins changed, then merge it
         env:
           GH_TOKEN: ${{ github.token }}
+          # Kill switch: set the repo variable AUTO_MERGE_PINS=false to go back
+          # to opening the PR and leaving it for a human, without editing this.
+          AUTO_MERGE: ${{ vars.AUTO_MERGE_PINS }}
         run: |
           if git diff --quiet -- registry/; then
             echo "no pin changes"; exit 0
           fi
+          # What the resolvers actually rewrote, captured before the commit so
+          # this needs no git history (the checkout is shallow). Untracked files
+          # count too — `git add registry/` below would sweep them in.
+          touched="$(git status --porcelain --untracked-files=all -- registry/ | sed 's/^...//')"
           date="$(date -u +%Y-%m-%d)"
           branch="auto/update-pins-$date"
           git config user.name "flatpark-bot"
@@ -122,6 +130,35 @@ jobs:
             echo "superseding older auto-update PR #$n"
             gh pr close "$n" --comment "Superseded by #$new ($date pin refresh)." --delete-branch || true
           done
+
+          # Auto-merge. Nothing here waits for a review: the diff is pins only,
+          # and every payload still in it was unpacked with the app's own
+          # apply_extra.sh above — that check, not a human read of a sha256, is
+          # what actually catches a bad update.
+          #
+          # Guard: check-updates.sh `eval`s each app's `update.command`, so a
+          # resolver can in principle write anywhere in the tree. The pin
+          # rewriter only ever touches flatpark.yml and the metainfo, so
+          # anything else in the diff means something wrote outside its lane —
+          # leave that one for a human instead of merging it unseen.
+          stray="$(printf '%s\n' "$touched" \
+                     | grep -vE '^registry/[^/]+/(flatpark\.yml|[^/]+\.metainfo\.xml)$' || true)"
+          if [ -n "$stray" ]; then
+            echo "::warning title=auto-merge skipped::diff touches files outside the pin surface"
+            printf '%s\n' "$stray"
+            gh pr comment "$new" --body "$(printf 'Auto-merge skipped — this diff touches files outside the pin surface (`flatpark.yml` / metainfo):\n\n```\n%s\n```\n\nA resolver writing anywhere else needs a human look.' "$stray")"
+          elif [ "${AUTO_MERGE:-true}" = "false" ]; then
+            echo "auto-merge disabled by the AUTO_MERGE_PINS repo variable; leaving #$new open"
+          else
+            gh pr merge "$new" --squash --delete-branch
+            # A push made with GITHUB_TOKEN never triggers another workflow, so
+            # publish.yml does NOT see this merge. workflow_dispatch is the
+            # documented exception to that rule, so ask for the publish here.
+            # It diffs from the last published sha recorded in R2, not from this
+            # push, so it builds exactly the apps the merge changed.
+            gh workflow run publish.yml --ref main
+            echo "merged #$new and dispatched publish"
+          fi
       # Last, so a held-back app still gets its PR opened for the apps that passed.
       # A red daily run is the point: an upstream that repackaged needs a human.
       - name: Fail if any pin was held back
