@@ -1,0 +1,161 @@
+id: com.usebottles.bottles
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: bottles
+separate-locales: false
+build-options:
+  no-debuginfo: true
+
+# This shell compiles nothing of its own. The payload is the complete /app tree
+# built by CI in flatpark/bottles-release — Bottles itself, the bundled wine,
+# vte, ImageMagick, yara, umu, fvs2 and the cp313 Python wheels — fetched as
+# extra-data on the user's machine, which is why FlatPark's own OSTree repository
+# holds only these few dozen kilobytes. The build recipe is public in
+# bottles-release, satisfying the GPL-3.0 obligation to offer the corresponding
+# source.
+#
+# The payload unpacks to /app/extra/bottles rather than /app: while apply_extra
+# runs, /app is read-only and only /app/extra is writable, and a Flatpak sandbox
+# cannot start a nested bwrap to bind it back. The symlinks and environment
+# variables below reconnect the paths; RUNPATHs that hardcoded /app were already
+# rewritten to $ORIGIN-relative ones by bottles-release.
+
+finish-args:
+  # The eight lines below match the Flathub build word for word — Bottles runs
+  # arbitrary Windows software inside the sandbox: devel gives it ptrace (wine
+  # debugging its own child processes), multiarch gives it 32-bit, and
+  # per-app-dev-shm keeps wine's shared memory from colliding with other apps.
+  - --allow=devel
+  - --allow=multiarch
+  - --allow=per-app-dev-shm
+  - --share=network
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  # Bottles passes gamepads and racing wheels through to Windows programs, and
+  # needs direct GPU access.
+  - --device=all
+  # umu (Proton's universal launcher) installs its runtime in these two
+  # locations, which the user owns in their home directory.
+  - --filesystem=~/.local/share/umu:create
+  - --filesystem=~/Games/umu:create
+  # Mounting game disc images.
+  - --system-talk-name=org.freedesktop.UDisks2
+
+  # /app/lib has to be a real directory (see below), so the payload's library
+  # directories go on LD_LIBRARY_PATH explicitly; lib/i386-linux-gnu is the
+  # Compat.i386 mount point, which is where the 32-bit libraries come from.
+  - --env=LD_LIBRARY_PATH=/app/extra/bottles/lib:/app/extra/bottles/lib32:/app/lib/i386-linux-gnu
+  - --env=PATH=/app/extra/bottles/bin:/app/bin:/app/utils/bin:/usr/bin:/usr/lib/extensions/vulkan/MangoHud/bin/:/usr/lib/extensions/vulkan/OBSVkCapture/bin/:/usr/lib/extensions/vulkan/gamescope/bin/
+  - --env=GST_PLUGIN_SYSTEM_PATH=/app/lib/gstreamer-1.0:/usr/lib/x86_64-linux-gnu/gstreamer-1.0:/usr/lib/i386-linux-gnu/gstreamer-1.0
+  # The payload's share/ is not at /app/share, which has to stay a real directory
+  # for Flatpak's build-time export. Without listing it here the icon theme
+  # cannot see the payload's icons — the runner icons (soda, caffe, vaniglia,
+  # protosoda) and Bottles' own symbolic icon all go missing. It also picks up
+  # the payload's GSettings schemas, mime data and Vulkan layers in one go.
+  - --env=XDG_DATA_DIRS=/app/extra/bottles/share:/app/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share
+  - --require-version=1.1.2
+
+# The Flathub build inherits these mount points through base: org.winehq.Wine.
+# This shell uses no base — wine is already in the payload — so it declares each
+# of them itself, keeping the definitions identical to the Wine base app's.
+#
+# Wine.gecko and Wine.mono are deliberately not declared: Bottles' own component
+# manager fetches gecko and mono on demand, so the Flatpak extension route is not
+# needed. Verified in practice — creating a bottle and running existing ones both
+# work without them.
+add-extensions:
+  org.freedesktop.Platform.GL32:
+    directory: lib/i386-linux-gnu/GL
+    no-autodownload: true
+    subdirectories: true
+    add-ld-path: lib
+    download-if: active-gl-driver
+    enable-if: active-gl-driver
+    autoprune-unless: active-gl-driver
+    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d;egl/egl_external_platform.d;OpenCL/vendors;lib/dri;lib/d3d;lib/gbm;vulkan/explicit_layer.d;vulkan/implicit_layer.d;vdpau
+    version: '1.4'
+    versions: 25.08;25.08-extra;1.4
+
+  # This path cannot move: the runtime hardcodes /lib/i386-linux-gnu as a symlink
+  # to ../../app/lib/i386-linux-gnu. Mounting the extension anywhere else yields
+  # /lib/ld-linux.so.2: could not open, and all 32-bit support dies.
+  org.freedesktop.Platform.Compat.i386:
+    directory: lib/i386-linux-gnu
+    version: '25.08'
+
+  org.freedesktop.Platform.codecs_extra.i386:
+    directory: lib/i386-linux-gnu/codecs-extra
+    add-ld-path: lib
+    version: '25.08-extra'
+
+  com.valvesoftware.Steam.CompatibilityTool:
+    directory: share/steam/compatibilitytools.d
+    no-autodownload: true
+    subdirectories: true
+    version: stable
+    versions: stable;beta;test
+
+  com.valvesoftware.Steam.Utility:
+    directory: utils
+    no-autodownload: true
+    subdirectories: true
+    add-ld-path: lib
+    merge-dirs: bin
+    version: stable
+    versions: stable;beta;test
+
+modules:
+  - name: bottles-shell
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 bottles-wrapper /app/bin/bottles
+      - install -Dm644 com.usebottles.bottles.desktop /app/share/applications/com.usebottles.bottles.desktop
+      - install -Dm644 com.usebottles.bottles.metainfo.xml /app/share/metainfo/com.usebottles.bottles.metainfo.xml
+      - install -Dm644 com.usebottles.bottles.svg /app/share/icons/hicolor/scalable/apps/com.usebottles.bottles.svg
+
+      # No extension mounts into these four, so they can be symlinked whole. They
+      # dangle until apply_extra unpacks the payload.
+      - for d in lib32 etc libexec i386; do rm -rf /app/$d; ln -s extra/bottles/$d /app/$d; done
+
+      # /app/lib and /app/share cannot be symlinked whole: flatpak-builder creates
+      # the extension mount points inside them at build time, when the payload has
+      # not been downloaded yet and the symlink dangles, and it fails outright with
+      # "Extension ... has invalid merge-dirs". So these two stay real directories
+      # and are symlinked one subdirectory at a time. The lists correspond to the
+      # layout.json published by bottles-release; resolve-update.sh checks them on
+      # every pin refresh and fails if the payload grows a new subdirectory.
+      - mkdir -p /app/lib/i386-linux-gnu/GL /app/lib/i386-linux-gnu/codecs-extra
+      - for d in cmake girepository-1.0 ImageMagick-7.1.1 krb5 libexec python3.13 samba systemd wine; do ln -s ../extra/bottles/lib/$d /app/lib/$d; done
+
+      # Under share/, the two that genuinely have to be symlinks are bottles and
+      # locale: the launcher uses absolute paths for
+      # Gio.Resource.load("/app/share/bottles/*.gresource") and
+      # gettext.install(..., "/app/share/locale"), which no environment variable
+      # can redirect. The rest are already covered by XDG_DATA_DIRS but are
+      # symlinked too, to keep the paths identical to the Flathub build.
+      - mkdir -p /app/share/steam/compatibilitytools.d /app/utils
+      - for d in bash-completion bottles cmake gir-1.0 glade glib-2.0 ImageMagick-7 licenses locale runtime vulkan; do ln -s ../extra/bottles/share/$d /app/share/$d; done
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: bottles.tar.zst
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/bottles-release/releases/download/v66.7/bottles-66.7-x86_64.tar.zst
+        sha256: 7b19c8bc80b9a9e0453882969c111a05d5041506e442f276fb2b71438e1bb823
+        size: 113479697
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: bottles-wrapper
+      - type: file
+        path: com.usebottles.bottles.desktop
+      - type: file
+        path: com.usebottles.bottles.metainfo.xml
+      - type: file
+        path: com.usebottles.bottles.svg
