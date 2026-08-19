@@ -1,0 +1,23 @@
+id: com.sigmafilemanager.app
+name: Sigma File Manager
+summary: Modern file manager with global search, tabs, split view and LAN sharing
+website: https://github.com/aleksey-hoffman/sigma-file-manager
+source_url: https://github.com/aleksey-hoffman/sigma-file-manager
+build:
+  manifest: com.sigmafilemanager.app.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: Utility
+  tags:
+    - File manager
+    - Search
+    - Tauri
+    - Open source
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions:
+    - --filesystem=home

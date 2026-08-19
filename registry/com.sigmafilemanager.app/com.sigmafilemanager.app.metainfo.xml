@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.sigmafilemanager.app</id>
+  <name>Sigma File Manager</name>
+  <summary>Modern file manager with global search, tabs, split view and LAN sharing</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <developer id="io.github.alekseyhoffman">
+    <name>Aleksey Hoffman</name>
+  </developer>
+  <url type="homepage">https://github.com/aleksey-hoffman/sigma-file-manager</url>
+  <url type="bugtracker">https://github.com/aleksey-hoffman/sigma-file-manager/issues</url>
+  <url type="vcs-browser">https://github.com/aleksey-hoffman/sigma-file-manager</url>
+  <url type="donation">https://www.patreon.com/sigma_file_manager</url>
+  <description>
+    <p>This is a community package of Sigma File Manager, maintained independently and unaffiliated with the Sigma File Manager project. It repackages the official upstream Linux build unmodified.</p>
+    <p>Sigma File Manager is a file manager for Linux and Windows with a fast global search index, tabs and split view, an address bar with autocomplete, filters, a command palette, tags, file previews and a heavily customizable interface.</p>
+    <ul>
+      <li>Global search over an index, with typo correction and property filters.</li>
+      <li>Tabs, split view, workspaces and a command palette.</li>
+      <li>Previews and thumbnails for images, video, audio and documents.</li>
+      <li>Share files over the local network to a browser on another device.</li>
+      <li>ZIP archive support, tags, bookmarks and an extension store.</li>
+    </ul>
+    <p>Permissions: this package can read and write your home directory and the usual removable-media mount points (/media, /run/media, /mnt) — a file manager cannot browse a directory tree through the file-chooser portal, so this is the grant that makes it work. The rest of the host filesystem is not exposed, so /etc, /opt, /srv and the host's own /usr are out of reach by default. Its own settings, search index and installed extensions stay inside the sandbox under ~/.var/app/com.sigmafilemanager.app.</p>
+    <p>A few optional capabilities are not granted by default; enable the ones you need with "flatpak override":</p>
+    <ul>
+      <li>Browse the whole filesystem, the way upstream's own build does: <code>flatpak override --user --filesystem=host com.sigmafilemanager.app</code></li>
+      <li>A single extra location instead, for example an external pool: <code>flatpak override --user --filesystem=/srv/data com.sigmafilemanager.app</code></li>
+    </ul>
+    <p>A few features need programs that are not part of the Flatpak runtime, so they do not work here: mounting a drive or a network share (udisksctl, sshfs and mount are not inside the sandbox), opening a terminal in a folder, and the "Open with" list of applications installed on your system. Opening a file with your desktop's default application does work — it goes through the desktop portal. Mount drives and shares from your desktop session first; they then show up in the file manager like any other directory.</p>
+    <p>The "launch at startup" setting writes its entry into the sandbox's own configuration directory, which your desktop session does not read. To start the app with your session, add an autostart entry that runs <code>flatpak run com.sigmafilemanager.app</code>.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Utility</category>
+    <category>FileTools</category>
+    <category>FileManager</category>
+  </categories>
+  <keywords>
+    <keyword>file manager</keyword>
+    <keyword>explorer</keyword>
+    <keyword>browser</keyword>
+    <keyword>search</keyword>
+    <keyword>files</keyword>
+  </keywords>
+  <recommends>
+    <display_length compare="ge">800</display_length>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <provides>
+    <binary>sigma-file-manager</binary>
+  </provides>
+  <launchable type="desktop-id">com.sigmafilemanager.app.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/sigma-file-manager-main.png</image>
+      <caption>The home page with user directories and drives</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="2.2.0" date="2026-07-17">
+      <description>
+        <p>System clipboard integration with other apps, box selection, linked split view, link handling, password-protected ZIP archives, extension API expansions, Hebrew language support and navigator polish.</p>
+      </description>
+      <url>https://github.com/aleksey-hoffman/sigma-file-manager/releases/tag/v2.2.0</url>
+    </release>
+    <release version="2.1.0" date="2026-05-24">
+      <description>
+        <p>Navigator performance improvements, generated thumbnails, extension themes, printing, file previews, new shortcuts, address editor improvements and a redesigned status center.</p>
+      </description>
+      <url>https://github.com/aleksey-hoffman/sigma-file-manager/releases/tag/v2.1.0</url>
+    </release>
+  </releases>
+</component>

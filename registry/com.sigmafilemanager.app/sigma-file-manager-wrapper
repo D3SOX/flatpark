@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+# Sigma File Manager is a Tauri (WebKitGTK) application staged by apply_extra to
+# /app/extra/sigma-file-manager/bin. The binary links only against libraries in
+# org.gnome.Platform (webkit2gtk-4.1, gtk-3, libsoup-3, gdk-pixbuf, cairo, dbus,
+# lzma) and dlopens libayatana-appindicator3 for its tray icon; that stack comes
+# from the prebuilt module in the manifest and is already on the runtime's
+# search path. Flatpak redirects the XDG base dirs into the per-app data dir, so
+# the settings, the search index and the extension store stay inside the sandbox.
+
+# WebKitGTK's DMABUF renderer paints a blank window under many drivers inside
+# the Flatpak sandbox; the compositing path is the reliable default here.
+export WEBKIT_DISABLE_DMABUF_RENDERER=1
+
+# apply_extra resolves the launcher's upstream name from the .deb's own .desktop
+# file and records it next to the app tree, so a rename upstream does not need a
+# change here.
+launcher="$(cat /app/extra/launcher 2>/dev/null || true)"
+[ -n "$launcher" ] || launcher=sigma-file-manager
+exec "/app/extra/sigma-file-manager/bin/$launcher" "$@"
