@@ -1,5 +1,6 @@
-# Destructive: reclaim R2 space. Delists apps whose registry/<id>/ is
-# gone, prunes every ref to its current commit, re-signs, republishes, then
+# Destructive: reclaim R2 space. Delists apps whose registry/<id>/ is gone,
+# drops extension refs their app no longer declares, prunes every ref to its
+# current commit, re-signs, republishes, then
 # deletes ONLY the pruned objects from R2 (prune-diff targeted delete — never a
 # blind mirror). Kept separate from the additive publish; runs weekly because
 # publish never deletes, so superseded versions accumulate in R2 until pruned.
