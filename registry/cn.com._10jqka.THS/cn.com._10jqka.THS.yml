@@ -17,28 +17,6 @@ finish-args:
   - --device=dri
   - --filesystem=xdg-download
 modules:
-  # The payload is a self-contained .NET 5 application. Its crypto layer dlopens
-  # libssl by soname and only knows the 1.0.x/1.1 names — .NET did not learn to
-  # load OpenSSL 3 until .NET 6 — so on this runtime it aborts at startup with
-  # "No usable version of libssl was found" before drawing a window.
-  #
-  # The shim is FlatPark's audited prebuilt stack from flatpark/prebuilt, pinned
-  # by sha256, rather than an OpenSSL compiled here. It lands in /app/lib/openssl-1.1,
-  # which only this app's wrapper puts on LD_LIBRARY_PATH — and last, so nothing
-  # else in the sandbox (CEF carries its own BoringSSL) resolves against it and
-  # the runtime's OpenSSL 3 stays the default everywhere else.
-  #
-  # Caveat worth restating on every version bump: the 1.1.1 series went end of
-  # life in September 2023, so this shim receives no upstream security fixes.
-  # It should be dropped the moment upstream ships a .NET 6+ build.
-  - name: openssl-1.1-compat
-    buildsystem: simple
-    build-commands:
-      - cp -a ./. /app/
-    sources:
-      - type: archive
-        url: https://github.com/flatpark/prebuilt/releases/download/openssl-1.1-compat-v1/openssl-1.1-compat-openssl-1.1-compat-v1-fd-25.08-x86_64.tar.xz
-        sha256: bedbd934a059322af7644676e89f9ccc510747917101e386c1a784a0a03d3939
   - name: ths
     buildsystem: simple
     build-commands:
@@ -48,6 +26,37 @@ modules:
       - install -Dm644 cn.com._10jqka.THS.metainfo.xml /app/share/metainfo/cn.com._10jqka.THS.metainfo.xml
       - install -Dm644 cn.com._10jqka.THS.svg /app/share/icons/hicolor/scalable/apps/cn.com._10jqka.THS.svg
     sources:
+      # The payload is a self-contained .NET 5 application. Its crypto layer
+      # dlopens libssl by soname and only knows the 1.0.x/1.1 names — .NET did
+      # not learn to load OpenSSL 3 until .NET 6 — so on this runtime it aborts
+      # at startup with "No usable version of libssl was found" before drawing a
+      # window.
+      #
+      # The shim is FlatPark's audited prebuilt stack from flatpark/prebuilt,
+      # pinned by sha256, rather than an OpenSSL compiled here. It is carried as
+      # extra-data rather than as a build module, so the archive is fetched from
+      # GitHub at install time and never enters FlatPark's OSTree repository —
+      # worth doing here because at ~12 MB unpacked this app is the only
+      # consumer, leaving content-addressed storage nothing to deduplicate.
+      #
+      # apply_extra unpacks it to /app/extra/openssl-1.1, which only this app's
+      # wrapper puts on LD_LIBRARY_PATH — and last, so nothing else in the
+      # sandbox (CEF carries its own BoringSSL) resolves against it and the
+      # runtime's OpenSSL 3 stays the default everywhere else.
+      #
+      # Caveat worth restating on every version bump: the 1.1.1 series went end
+      # of life in September 2023, so this shim receives no upstream security
+      # fixes. It should be dropped the moment upstream ships a .NET 6+ build.
+      #
+      # Deliberately OUTSIDE the managed block below: update-pins.mjs rebuilds
+      # that block from the resolver's sources and would drop anything else in it.
+      - type: extra-data
+        filename: openssl-1.1-compat.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/openssl-1.1-compat-v1/openssl-1.1-compat-openssl-1.1-compat-v1-fd-25.08-x86_64.tar.xz
+        sha256: bedbd934a059322af7644676e89f9ccc510747917101e386c1a784a0a03d3939
+        size: 3966556
       # BEGIN MANAGED EXTRA-DATA
       - type: extra-data
         filename: ths.deb

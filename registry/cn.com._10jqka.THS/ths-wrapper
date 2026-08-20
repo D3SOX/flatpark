@@ -19,10 +19,10 @@ for seeded in hevoConfig workspace; do
     fi
 done
 
-# /app/lib/openssl-1.1 goes last: it exists only so the bundled .NET 5 runtime
+# /app/extra/openssl-1.1 goes last: it exists only so the bundled .NET 5 runtime
 # can dlopen libssl.so.1.1, and must never take precedence over the runtime's own
-# libraries. See the openssl-1.1-compat module in the manifest.
-export LD_LIBRARY_PATH="$app_dir:$app_dir/lib:$app_dir/cef/Release${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}:/app/lib/openssl-1.1"
+# libraries. See the openssl-1.1-compat source in the manifest.
+export LD_LIBRARY_PATH="$app_dir:$app_dir/lib:$app_dir/cef/Release${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}:/app/extra/openssl-1.1"
 export FONTCONFIG_FILE=/etc/fonts/fonts.conf
 export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 
