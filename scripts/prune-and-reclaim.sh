@@ -3,6 +3,9 @@
 #   1. delete refs for apps no longer in the registry (delist) — the app/<id>
 #      ref and the runtime/<id>.{Debug,Locale,Sources} extensions exported with
 #      it, and record them so their ref files can be deleted from R2 too,
+#   1b. delete runtime/<id>.{Debug,Locale,Sources} refs whose app is still
+#      listed but no longer declares that extension in its commit metadata —
+#      otherwise step 2 pins the last build that did produce it, forever,
 #   2. prune to the current commit of every remaining ref (keep current only —
 #      fix forward, no rollback retention),
 #   3. write the exact set of objects pruning removed to a reclaim list.
@@ -41,6 +44,40 @@ while IFS= read -r ref; do
     log "delist: removing ref $ref (no registry entry for $(ref_registry_id "$ref"))"
     ostree --repo="$repo" refs --delete "$ref"
 done < <(ostree --repo="$repo" refs)
+
+# 1b. Orphaned extensions: drop a .Debug/.Locale/.Sources ref the app no longer
+#     exports. Adding `no-debuginfo: true` (or `separate-locales: false`) stops
+#     the next build from producing the extension, but the ref the *previous*
+#     build published survives — and step 2 below then pins its commit forever,
+#     so the objects are never reclaimed. com.tencent.wemeet.Debug sat there at
+#     42.4 MB, the largest object set in the repo, on a commit from a build two
+#     manifest revisions old.
+#
+#     Flatpak records what an app actually carries in the commit's /metadata, so
+#     an `[Extension <id>.<Ext>]` section that is no longer there is proof the
+#     ref is orphaned. Anything we cannot read that from is left alone: no
+#     parent app ref (delist above owns that case), no /metadata, or an empty
+#     one. Deleting on absence of evidence would take out live extensions.
+while IFS= read -r ref; do
+    [ -n "$ref" ] || continue
+    case "$ref" in *:*) continue ;; esac      # remote ref, not ours to touch
+    case "$ref" in
+        runtime/*.Debug/*|runtime/*.Locale/*|runtime/*.Sources/*) ;;
+        *) continue ;;
+    esac
+    ext_id="$(ref_registry_id "$ref")"
+    [ -n "$ext_id" ] || continue
+    rest="${ref#runtime/}"
+    ext_name="${rest%%/*}"                    # <id>.<Ext>
+    app_ref="app/$ext_id/${rest#*/}"          # app/<id>/<arch>/<branch>
+    ostree --repo="$repo" rev-parse "$app_ref" >/dev/null 2>&1 || continue
+    meta="$(ostree --repo="$repo" cat "$app_ref" /metadata 2>/dev/null)" || continue
+    [ -n "$meta" ] || continue
+    if printf '%s\n' "$meta" | grep -qF "[Extension $ext_name]"; then continue; fi
+    log "orphan: removing ref $ref ($ext_id no longer exports [Extension $ext_name])"
+    ostree --repo="$repo" refs --delete "$ref"
+done < <(ostree --repo="$repo" refs)
+
 ( cd "$repo" && find refs -type f 2>/dev/null | sort ) > "$refs_after"
 
 # The ref files that just disappeared => delete the same keys from R2.
