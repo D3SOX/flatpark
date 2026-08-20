@@ -137,18 +137,19 @@ jobs:
           # what actually catches a bad update.
           #
           # Guard: check-updates.sh `eval`s each app's `update.command`, so a
-          # resolver can in principle write anywhere in the tree. The pin
-          # rewriter only ever touches flatpark.yml and the metainfo, so
-          # anything else in the diff means something wrote outside its lane —
-          # leave that one for a human instead of merging it unseen.
+          # resolver can in principle write anywhere in the tree. A pin refresh
+          # only ever rewrites the manifest (`registry/<id>/<id>.yml`, where the
+          # url/sha256 live) and the metainfo next to it, so anything else in the
+          # diff means something wrote outside its lane — an apply_extra.sh, a
+          # wrapper, a file outside registry/. Leave that one for a human.
           stray="$(printf '%s\n' "$touched" \
-                     | grep -vE '^registry/[^/]+/(flatpark\.yml|[^/]+\.metainfo\.xml)$' || true)"
-          if [ -n "$stray" ]; then
+                     | grep -vE '^registry/[^/]+/[^/]+\.(yml|metainfo\.xml)$' || true)"
+          if [ "${AUTO_MERGE:-true}" = "false" ]; then
+            echo "auto-merge disabled by the AUTO_MERGE_PINS repo variable; leaving #$new open"
+          elif [ -n "$stray" ]; then
             echo "::warning title=auto-merge skipped::diff touches files outside the pin surface"
             printf '%s\n' "$stray"
-            gh pr comment "$new" --body "$(printf 'Auto-merge skipped — this diff touches files outside the pin surface (`flatpark.yml` / metainfo):\n\n```\n%s\n```\n\nA resolver writing anywhere else needs a human look.' "$stray")"
-          elif [ "${AUTO_MERGE:-true}" = "false" ]; then
-            echo "auto-merge disabled by the AUTO_MERGE_PINS repo variable; leaving #$new open"
+            gh pr comment "$new" --body "$(printf 'Auto-merge skipped — this diff touches files a pin refresh never writes:\n\n```\n%s\n```\n\nA resolver writing anywhere else needs a human look.' "$stray")"
           else
             gh pr merge "$new" --squash --delete-branch
             # A push made with GITHUB_TOKEN never triggers another workflow, so
