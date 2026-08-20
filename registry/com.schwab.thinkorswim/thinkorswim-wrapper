@@ -13,6 +13,12 @@ jre_home=/app/extra/jre
 export INSTALL4J_JAVA_HOME_OVERRIDE="$jre_home"
 export LD_LIBRARY_PATH="$jre_home/lib:$jre_home/lib/server${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+# The Schwab login form is rendered by JxBrowser's Chromium, which starts with
+# its own sandbox and needs a new user namespace for it - something this sandbox
+# does not allow. The preload adds --no-sandbox to that one process so the login
+# form appears; see chromium-no-sandbox.c.
+export LD_PRELOAD="/app/lib/thinkorswim/libnosandbox.so${LD_PRELOAD:+:$LD_PRELOAD}"
+
 # The installer derives the install dir from user.home and ignores a differing
 # -dir, so the app lands at $HOME/thinkorswim (HOME is redirected into the data
 # dir above). Point app_dir there and still pass -dir for forward-compat.
