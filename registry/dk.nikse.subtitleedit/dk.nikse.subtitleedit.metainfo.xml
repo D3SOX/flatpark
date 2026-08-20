@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dk.nikse.subtitleedit</id>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Subtitle Edit</name>
+  <summary>A free, open source subtitle editor</summary>
+
+  <description>
+    <p>
+      Subtitle Edit is a free and open source subtitle editor. It supports
+      hundreds of subtitle formats and provides editing tools including:
+    </p>
+    <ul>
+      <li>Create, edit, and convert subtitles in hundreds of formats (SRT, ASS, SSA, VTT, STL, and more)</li>
+      <li>Sync subtitles to video using waveform or spectrogram view</li>
+      <li>Spell checking with Hunspell dictionaries</li>
+      <li>Auto-translation via popular online services</li>
+      <li>Speech-to-text (Whisper, Azure, Google, etc.)</li>
+      <li>Text-to-speech synthesis</li>
+      <li>OCR support for image-based subtitle formats (e.g. SUP/Blu-ray)</li>
+      <li>Batch conversion and fix common errors tools</li>
+      <li>Video playback with waveform/spectrogram synchronization</li>
+    </ul>
+    <p>
+      This package repackages the official Linux x86_64 build published by the
+      Subtitle Edit project, unmodified. libmpv (video preview) and ffmpeg
+      (waveform extraction) are built into the sandbox, because the upstream
+      tarball does not carry them.
+    </p>
+    <p>
+      Media in the standard XDG Videos, Music, Documents and Downloads folders
+      is readable out of the box. A few further capabilities are not granted by
+      default; enable the ones you need with "flatpak override":
+    </p>
+    <ul>
+      <li>Open media stored anywhere else in your home directory: <code>flatpak override --user --filesystem=home dk.nikse.subtitleedit</code></li>
+      <li>Open media on external drives or other mounts: <code>flatpak override --user --filesystem=/run/media dk.nikse.subtitleedit</code></li>
+    </ul>
+  </description>
+
+  <url type="homepage">https://www.nikse.dk/subtitleedit</url>
+  <url type="bugtracker">https://github.com/SubtitleEdit/subtitleedit/issues</url>
+  <url type="donation">https://github.com/sponsors/niksedk</url>
+
+  <developer id="dk.nikse">
+    <name>Nikolaj Olsson</name>
+  </developer>
+
+  <launchable type="desktop-id">dk.nikse.subtitleedit.desktop</launchable>
+
+  <categories>
+    <category>AudioVideo</category>
+    <category>Video</category>
+  </categories>
+
+  <keywords>
+    <keyword>subtitle</keyword>
+    <keyword>subtitles</keyword>
+    <keyword>srt</keyword>
+    <keyword>ass</keyword>
+    <keyword>vtt</keyword>
+    <keyword>caption</keyword>
+    <keyword>transcription</keyword>
+  </keywords>
+
+  <provides>
+    <binary>subtitleedit</binary>
+  </provides>
+
+  <mimetypes>
+    <mimetype>application/x-subrip</mimetype>
+    <mimetype>text/x-ssa</mimetype>
+  </mimetypes>
+
+  <releases>
+    <release version="5.1.0" date="2026-07-29">
+      <description>
+        <p>Subtitle Edit 5.1.0. See the upstream release notes for details.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+</component>

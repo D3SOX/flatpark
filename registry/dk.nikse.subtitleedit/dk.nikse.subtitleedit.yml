@@ -1,0 +1,93 @@
+id: dk.nikse.subtitleedit
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: subtitleedit
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=xdg-videos
+  - --filesystem=xdg-music
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+modules:
+  - name: libass
+    buildsystem: autotools
+    config-opts:
+      - --libdir=/app/lib
+      - --disable-static
+      - --enable-shared
+    sources:
+      - type: git
+        url: https://github.com/libass/libass.git
+        commit: e46aedea0a0d17da4c4ef49d84b94a7994664ab5
+
+  - name: libplacebo
+    buildsystem: meson
+    config-opts:
+      - --libdir=lib
+      - -Ddefault_library=shared
+      - -Dtests=false
+      - -Ddemos=false
+    sources:
+      - type: git
+        url: https://github.com/haasn/libplacebo.git
+        commit: cee9b076f2c63104ccfd497fa79c39a867293ec4
+
+  - name: mpv
+    buildsystem: meson
+    config-opts:
+      - --libdir=lib
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dbuild-date=false
+      - -Dmanpage-build=disabled
+      - -Dtests=false
+      - -Dlua=disabled
+      - -Djavascript=disabled
+    sources:
+      - type: git
+        url: https://github.com/mpv-player/mpv.git
+        commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
+
+  - name: ffmpeg-tools
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 /usr/bin/ffmpeg /app/bin/ffmpeg
+      - install -Dm755 /usr/bin/ffprobe /app/bin/ffprobe
+
+  - name: subtitleedit
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 subtitleedit-wrapper /app/bin/subtitleedit
+      - install -Dm644 dk.nikse.subtitleedit.desktop /app/share/applications/dk.nikse.subtitleedit.desktop
+      - install -Dm644 dk.nikse.subtitleedit.metainfo.xml /app/share/metainfo/dk.nikse.subtitleedit.metainfo.xml
+      - install -Dm644 dk.nikse.subtitleedit.png /app/share/icons/hicolor/256x256/apps/dk.nikse.subtitleedit.png
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: subtitleedit.tar.gz
+        only-arches:
+          - x86_64
+        url: https://github.com/SubtitleEdit/subtitleedit/releases/download/v5.1.0/SubtitleEdit-Linux-x64.tar.gz
+        sha256: 455938238969d3aa0a2a500ac061b66161bed1602a96846e01c883322cd5255f
+        size: 59005452
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: subtitleedit-wrapper
+      - type: file
+        path: dk.nikse.subtitleedit.desktop
+      - type: file
+        path: dk.nikse.subtitleedit.metainfo.xml
+      - type: file
+        path: dk.nikse.subtitleedit.png
