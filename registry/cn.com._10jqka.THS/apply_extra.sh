@@ -11,6 +11,19 @@ extra_root="${EXTRA_ROOT:-/app/extra}"
 cd "$extra_root"
 
 [ -f ths.deb ] || { echo "missing extra-data: ths.deb" >&2; exit 1; }
+[ -f openssl-1.1-compat.tar.xz ] || { echo "missing extra-data: openssl-1.1-compat.tar.xz" >&2; exit 1; }
+
+# The OpenSSL 1.1 shim the bundled .NET 5 runtime dlopens (see the manifest).
+# --strip-components=2 drops the archive's <stack>/lib/ prefix so its
+# openssl-1.1/ directory lands directly under /app/extra, keeping the directory
+# name the wrapper's LD_LIBRARY_PATH refers to.
+rm -rf openssl-1.1
+tar --no-same-owner --strip-components=2 -xJf openssl-1.1-compat.tar.xz -C .
+[ -e openssl-1.1/libssl.so.1.1 ] && [ -e openssl-1.1/libcrypto.so.1.1 ] || {
+    echo "openssl-1.1-compat.tar.xz did not yield openssl-1.1/libssl.so.1.1" >&2
+    exit 1
+}
+rm -f openssl-1.1-compat.tar.xz
 
 rm -rf stage ths
 mkdir stage

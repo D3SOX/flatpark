@@ -15,23 +15,6 @@ finish-args:
   - --device=dri
   - --talk-name=org.freedesktop.Notifications
 modules:
-  - name: kerberos
-    subdir: src
-    config-opts:
-      - --localstatedir=/var/lib
-      - --sbindir=${FLATPAK_DEST}/bin
-      - --disable-rpath
-      - --disable-static
-    cleanup:
-      - /bin
-      - /share/et
-      - /share/examples
-    sources:
-      - type: archive
-        url: https://kerberos.org/dist/krb5/1.22/krb5-1.22.1.tar.gz
-        mirror-urls:
-          - https://web.mit.edu/kerberos/dist/krb5/1.22/krb5-1.22.1.tar.gz
-        sha256: 1a8832b8cad923ebbf1394f67e2efcf41e3a49f460285a66e35adec8fa0053af
   - name: ibkr-desktop
     buildsystem: simple
     build-commands:
@@ -41,6 +24,30 @@ modules:
       - install -Dm644 com.interactivebrokers.ibkrdesktop.metainfo.xml /app/share/metainfo/com.interactivebrokers.ibkrdesktop.metainfo.xml
       - install -Dm644 com.interactivebrokers.ibkrdesktop.svg /app/share/icons/hicolor/scalable/apps/com.interactivebrokers.ibkrdesktop.svg
     sources:
+      # IBKR bundles its own Qt 6.8.3, and their build of libQt6Network carries a
+      # hard DT_NEEDED on libgssapi_krb5.so.2 (readelf -d confirms it; the only
+      # reference in the whole payload). org.freedesktop.Platform//25.08 ships no
+      # krb5 at all, so without this the loader fails on libQt6Network and the
+      # app never starts — this is a link-time dependency, unrelated to whether
+      # anyone ever authenticates with Kerberos.
+      #
+      # Carried as extra-data rather than a build module on purpose: the bytes
+      # then travel over GitHub's bandwidth at install time instead of landing in
+      # FlatPark's OSTree repository. Prebuilt from
+      # https://github.com/flatpark/prebuilt (krb5-gss.yml at the tag records the
+      # exact source and pin); the archive holds only the load-time closure of
+      # libgssapi_krb5.so.2, not the KDC/kadmin libraries, plugins or headers.
+      # ibkr-desktop-wrapper puts its lib/ LAST on LD_LIBRARY_PATH.
+      #
+      # Deliberately OUTSIDE the managed block below: update-pins.mjs rebuilds
+      # that block from the resolver's sources and would drop anything else in it.
+      - type: extra-data
+        filename: krb5-gss.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/krb5-gss-v1/krb5-gss-krb5-gss-v1-fd-25.08-x86_64.tar.xz
+        sha256: dfda035156e18d7877b274bfb4ae81e09de764ac5b074c75e5887ae5138eee8b
+        size: 1996340
       # BEGIN MANAGED EXTRA-DATA
       - type: extra-data
         filename: ntws-installer.sh

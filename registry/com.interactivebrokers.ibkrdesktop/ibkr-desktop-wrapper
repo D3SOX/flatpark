@@ -13,7 +13,10 @@ export QT_QPA_PLATFORM=xcb
 
 jre_home=/app/extra/jre
 export INSTALL4J_JAVA_HOME_OVERRIDE="$jre_home"
-export LD_LIBRARY_PATH="$jre_home/lib:$jre_home/lib/server${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# The GSSAPI shim goes LAST: the payload's bundled libQt6Network needs
+# libgssapi_krb5.so.2 by soname, and nothing else in the sandbox should reach
+# these libraries in preference to its own.
+export LD_LIBRARY_PATH="$jre_home/lib:$jre_home/lib/server${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}:/app/extra/krb5-gss/lib"
 
 app_dir="$XDG_DATA_HOME/ibkr"
 
