@@ -5,7 +5,10 @@ sdk: org.gnome.Sdk
 command: harbor-beta
 separate-locales: false
 build-options:
+  # no-debuginfo alone leaves the DWARF inside mpv-stack's copied libraries;
+  # ~10 MB of this ref was debug sections.
   no-debuginfo: true
+  strip: true
 finish-args:
   - --share=ipc
   - --share=network

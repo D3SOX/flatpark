@@ -3,13 +3,24 @@ set -eu
 
 # Runs offline at install time inside org.gnome.Platform. Upstream ships
 # Longbridge Pro as a .deb with the application binary at /usr/local/bin.
-# Flatpak-exported metadata and fonts are installed by the manifest at build
-# time; extra-data only stages the proprietary app binary into /app/extra.
+# Flatpak-exported metadata (desktop entry, icon, AppStream) is installed by the
+# manifest at build time; extra-data stages the proprietary app binary and the
+# two Noto faces into /app/extra.
 
 extra_root="${EXTRA_ROOT:-/app/extra}"
 cd "$extra_root"
 
 [ -f longbridgepro.deb ] || { echo "missing extra-data: longbridgepro.deb" >&2; exit 1; }
+
+# The app's whole font set. /app/share/fonts/fonts.conf — which the wrapper
+# points FONTCONFIG_FILE at — declares this directory and nothing else, so a
+# missing face here means a tofu UI rather than a fallback.
+rm -rf fonts
+mkdir fonts
+for face in NotoSans-Regular.ttf NotoSansCJK-Regular.ttc; do
+    [ -f "$face" ] || { echo "missing extra-data: $face" >&2; exit 1; }
+    mv "$face" fonts/
+done
 
 rm -rf stage longbridge
 mkdir stage

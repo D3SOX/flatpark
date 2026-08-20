@@ -4,6 +4,10 @@ runtime-version: '50'
 sdk: org.gnome.Sdk
 command: gse-profiler
 separate-locales: false
+build-options:
+  # no-debuginfo alone leaves the DWARF inside python3-systemd's .so.
+  no-debuginfo: true
+  strip: true
 
 finish-args:
   # Standard GTK/Wayland display + IPC plumbing. Wayland-only by design

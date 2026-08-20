@@ -6,6 +6,11 @@ command: wemeetapp
 separate-locales: false
 rename-icon: wemeet
 rename-desktop-file: wemeet.desktop
+build-options:
+  # no-debuginfo alone leaves the DWARF inside the copied prebuilt libraries;
+  # without strip this app exported a 42.4 MB .Debug ref.
+  no-debuginfo: true
+  strip: true
 finish-args:
   # Tencent Meeting (腾讯会议). Repackages the official upstream .deb unmodified.
   #
@@ -30,37 +35,12 @@ finish-args:
   - --unset-env=WAYLAND_DISPLAY
   # Hidpi scale
   - --env=QT_AUTO_SCREEN_SCALE_FACTOR=1
-cleanup:
-  - /include
-  - /lib/cmake
-  - /lib/pkgconfig
-  - /share/doc
-  - /share/man
-
 modules:
-  # OpenCV (core + imgproc). The hook dlopen()s libopencv_core.so and
-  # libopencv_imgproc.so by their UNVERSIONED soname the moment screen sharing
-  # starts (via its OpencvDLFCNSingleton). libhook.so therefore has no opencv
-  # DT_NEEDED, but screen sharing crashes ("Failed to open library
-  # libopencv_core.so") without these in /app/lib — so we ship them. This is the
-  # generic, reusable opencv-imgproc release, not a wemeet-specific bundle.
-  # Both prebuilt once against org.freedesktop.Sdk//25.08 by
-  # https://github.com/flatpark/prebuilt (manifests at the release tags record
-  # exact sources/pins). No opencv recompile per build.
-  - name: opencv-imgproc
-    buildsystem: simple
-    only-arches: [x86_64]
-    build-commands:
-      - cp -a ./. /app/
-    sources:
-      - type: archive
-        only-arches: [x86_64]
-        url: https://github.com/flatpark/prebuilt/releases/download/opencv-imgproc-v1/opencv-imgproc-opencv-imgproc-v1-fd-25.08-x86_64.tar.xz
-        sha256: 853c61fe34d0a6d51ce296ea3bb394b0b80a24eae7fcb55d84b890245f18df7f
-
-  # libportal + wemeet-wayland-screenshare libhook.so (opencv is dlopen'd from
-  # the module above, so this archive ships none). Replaces the inline
-  # libportal/opencv/hook modules.
+  # libportal + wemeet-wayland-screenshare libhook.so. OpenCV is dlopen'd, not
+  # linked, so this archive ships none of it — it comes in as extra-data below.
+  # Prebuilt once against org.freedesktop.Sdk//25.08 by
+  # https://github.com/flatpark/prebuilt (the manifest at the release tag
+  # records the exact sources and pins).
   - name: wemeet-screenshare-hook
     buildsystem: simple
     only-arches: [x86_64]
@@ -85,6 +65,27 @@ modules:
       # so ship the SDK copy.
       - install -D /usr/bin/desktop-file-edit -t /app/bin/
     sources:
+      # OpenCV (core + imgproc), FlatPark's audited prebuilt stack. The hook
+      # dlopen()s libopencv_core.so / libopencv_imgproc.so by their UNVERSIONED
+      # soname when screen sharing starts (its OpencvDLFCNSingleton), so
+      # libhook.so has no OpenCV DT_NEEDED but screen sharing dies with "Failed
+      # to open library libopencv_core.so" if they cannot be found.
+      #
+      # Extra-data rather than a build module: as an archive module the stack
+      # was stored in FlatPark's repository, and WeMeet is its only consumer, so
+      # content addressing had nothing to deduplicate. apply_extra unpacks it to
+      # /app/extra/opencv-imgproc, which only this app's wrapper puts on
+      # LD_LIBRARY_PATH, and last — nothing else in the sandbox is shadowed.
+      #
+      # Deliberately OUTSIDE the managed block below: update-pins.mjs rebuilds
+      # that block from the resolver's sources and would drop anything else in it.
+      - type: extra-data
+        filename: opencv-imgproc.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/opencv-imgproc-v2/opencv-imgproc-opencv-imgproc-v2-fd-25.08-x86_64.tar.xz
+        sha256: 6d211fcdfe97026f65433e24f261d284c0c5da2ef55de7ec4b88dfcce407ad2d
+        size: 4460420
       # BEGIN MANAGED EXTRA-DATA
       - type: extra-data
         filename: wemeet.deb
