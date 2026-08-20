@@ -5,4 +5,13 @@ set -eu
 # Launch its own start script; the XWayland forcing, hidpi scale and the
 # LD_PRELOAD of /app/lib/wemeet/libhook.so (the wayland-screenshare hook) are all
 # set as --env in finish-args, so they reach the app process here unchanged.
+#
+# OpenCV is extra-data (see the manifest), so it lives outside the loader's
+# default search path and has to be named here. LAST on the path, so it shadows
+# nothing else in the sandbox — and wemeetapp.sh prepends its own bundled lib/
+# to whatever it inherits, which keeps the payload's own libraries first.
+# The hook dlopen()s libopencv_core.so / libopencv_imgproc.so by their
+# unversioned soname when screen sharing starts; this is how it finds them.
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}/app/extra/opencv-imgproc/lib"
+
 exec /app/extra/opt/wemeet/wemeetapp.sh "$@"

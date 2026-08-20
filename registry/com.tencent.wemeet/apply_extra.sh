@@ -12,6 +12,19 @@ extra_root="${EXTRA_ROOT:-/app/extra}"
 cd "$extra_root"
 
 [ -f wemeet.deb ] || { echo "missing extra-data: wemeet.deb" >&2; exit 1; }
+[ -f opencv-imgproc.tar.xz ] || { echo "missing extra-data: opencv-imgproc.tar.xz" >&2; exit 1; }
+
+# FlatPark's prebuilt OpenCV (see the manifest). The archive's single top-level
+# directory is the stack name, so it unpacks straight to opencv-imgproc/lib/...,
+# which is the path the wrapper puts last on LD_LIBRARY_PATH and where the
+# screenshare hook's dlopen() of the unversioned soname resolves.
+rm -rf opencv-imgproc
+tar --no-same-owner -xJf opencv-imgproc.tar.xz -C .
+[ -e opencv-imgproc/lib/libopencv_core.so ] && [ -e opencv-imgproc/lib/libopencv_imgproc.so ] || {
+    echo "opencv-imgproc.tar.xz did not yield opencv-imgproc/lib/libopencv_core.so" >&2
+    exit 1
+}
+rm -f opencv-imgproc.tar.xz
 
 # The Platform runtime has no ar/dpkg, but bsdtar (libarchive) reads the .deb ar
 # container directly; pipe its data member into a second bsdtar to unpack the tree

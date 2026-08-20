@@ -3,6 +3,8 @@ runtime: org.gnome.Platform
 runtime-version: "50"
 sdk: org.gnome.Sdk
 command: longbridgepro
+build-options:
+  no-debuginfo: true
 tags:
   - proprietary
 finish-args:
@@ -23,6 +25,28 @@ modules:
       - install -Dm644 fonts.conf /app/share/fonts/fonts.conf
       - install -Dm644 com.longbridgeapp.LongbridgePro.desktop /app/share/applications/com.longbridgeapp.LongbridgePro.desktop
     sources:
+      # The app's entire font set: fonts.conf points fontconfig at /app/extra/fonts
+      # and nowhere else, so the CJK face has to be here or the UI renders as tofu.
+      # Extra-data rather than a build module — NotoSansCJK is 19.5 MB, and as a
+      # build module it put 16 MB into FlatPark's repository for a file jsDelivr
+      # already serves. Same tag-pinned URLs and sha256 as before.
+      #
+      # Deliberately OUTSIDE the managed block below: update-pins.mjs rebuilds
+      # that block from the resolver's sources and would drop anything else in it.
+      - type: extra-data
+        filename: NotoSans-Regular.ttf
+        only-arches:
+          - x86_64
+        url: https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io@noto-monthly-release-2026.05.01/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf
+        sha256: 478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823
+        size: 621572
+      - type: extra-data
+        filename: NotoSansCJK-Regular.ttc
+        only-arches:
+          - x86_64
+        url: https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/Sans/OTC/NotoSansCJK-Regular.ttc
+        sha256: b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a
+        size: 19484784
       # BEGIN MANAGED EXTRA-DATA
       - type: extra-data
         filename: longbridgepro.deb
@@ -44,29 +68,3 @@ modules:
         path: com.longbridgeapp.LongbridgePro.png
       - type: file
         path: fonts.conf
-  - name: noto-sans
-    buildsystem: simple
-    build-commands:
-      - install -Dm644 NotoSans-Regular.ttf /app/share/fonts/NotoSans-Regular.ttf
-      - install -Dm644 NotoSans.LICENSE.txt /app/share/fonts/NotoSans.LICENSE.txt
-    sources:
-      - type: file
-        url: https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io@noto-monthly-release-2026.05.01/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf
-        sha256: 478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823
-      - type: file
-        url: https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io@noto-monthly-release-2026.05.01/fonts/LICENSE
-        sha256: f2095b08bed08b23a6fe26112fcd679a2bee3f002eef077eb05d215ed1051bd8
-        dest-filename: NotoSans.LICENSE.txt
-  - name: noto-sans-cjk
-    buildsystem: simple
-    build-commands:
-      - install -Dm644 NotoSansCJK-Regular.ttc /app/share/fonts/NotoSansCJK-Regular.ttc
-      - install -Dm644 NotoSansCJK.LICENSE.txt /app/share/fonts/NotoSansCJK.LICENSE.txt
-    sources:
-      - type: file
-        url: https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/Sans/OTC/NotoSansCJK-Regular.ttc
-        sha256: b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a
-      - type: file
-        url: https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Sans2.004/LICENSE
-        sha256: 6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2
-        dest-filename: NotoSansCJK.LICENSE.txt
