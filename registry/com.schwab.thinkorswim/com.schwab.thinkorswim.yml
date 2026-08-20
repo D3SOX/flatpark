@@ -16,6 +16,18 @@ finish-args:
   - --device=dri
   - --talk-name=org.freedesktop.Notifications
 modules:
+  # Preload that adds --no-sandbox to the JxBrowser Chromium process behind the
+  # Schwab login form; see chromium-no-sandbox.c for why the switch cannot be
+  # passed any other way.
+  - name: thinkorswim-nosandbox
+    buildsystem: simple
+    build-commands:
+      - cc -shared -fPIC -O2 chromium-no-sandbox.c -o libnosandbox.so -ldl
+      - install -Dm755 libnosandbox.so /app/lib/thinkorswim/libnosandbox.so
+    sources:
+      - type: file
+        path: chromium-no-sandbox.c
+
   - name: thinkorswim
     buildsystem: simple
     build-commands:
