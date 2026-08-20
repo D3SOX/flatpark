@@ -75,6 +75,17 @@
     <mimetype>text/x-ssa</mimetype>
   </mimetypes>
 
+  <screenshots>
+    <screenshot type="default">
+      <image>https://www.nikse.dk/assets/SubtitleEdit/se1.png</image>
+      <caption>Subtitle list, video preview and waveform in one window</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://www.nikse.dk/assets/SubtitleEdit/se2.jpg</image>
+      <caption>The same editing view in the dark theme</caption>
+    </screenshot>
+  </screenshots>
+
   <releases>
     <release version="5.1.0" date="2026-07-29">
       <description>

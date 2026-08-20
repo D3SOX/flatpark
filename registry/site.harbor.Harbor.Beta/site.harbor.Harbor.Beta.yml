@@ -27,44 +27,14 @@ modules:
         url: https://github.com/flatpark/prebuilt/releases/download/ayatana-v1/ayatana-stack-ayatana-v1-gnome-50-x86_64.tar.xz
         sha256: 37a91a0840b06da5319c36275fad2b1dca906152553f295944b81f202d1476fc
 
-  - name: libass
-    buildsystem: autotools
-    config-opts:
-      - --libdir=/app/lib
-      - --disable-static
-      - --enable-shared
+  - name: mpv-stack
+    buildsystem: simple
+    build-commands:
+      - cp -a ./. /app/
     sources:
-      - type: git
-        url: https://github.com/libass/libass.git
-        commit: e46aedea0a0d17da4c4ef49d84b94a7994664ab5
-
-  - name: libplacebo
-    buildsystem: meson
-    config-opts:
-      - --libdir=lib
-      - -Ddefault_library=shared
-      - -Dtests=false
-      - -Ddemos=false
-    sources:
-      - type: git
-        url: https://github.com/haasn/libplacebo.git
-        commit: cee9b076f2c63104ccfd497fa79c39a867293ec4
-
-  - name: mpv
-    buildsystem: meson
-    config-opts:
-      - --libdir=lib
-      - -Dlibmpv=true
-      - -Dcplayer=true
-      - -Dbuild-date=false
-      - -Dmanpage-build=disabled
-      - -Dtests=false
-      - -Dlua=disabled
-      - -Djavascript=disabled
-    sources:
-      - type: git
-        url: https://github.com/mpv-player/mpv.git
-        commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
+      - type: archive
+        url: https://github.com/flatpark/prebuilt/releases/download/mpv-v1/mpv-stack-mpv-v1-gnome-50-x86_64.tar.xz
+        sha256: 900008f2263d53f72061e42f27775ab985510f496320aa366b2493662ec5a3be
 
   - name: media-tools
     buildsystem: simple
@@ -91,9 +61,9 @@ modules:
         filename: harbor-beta.deb
         only-arches:
           - x86_64
-        url: https://github.com/harborstremio-linux/harbor-linux-builds/releases/download/beta-v0.9.115/Harbor_0.9.115_amd64.deb
-        sha256: 43eb0cf188f804b4228244db447672578530f75b6e7cea6c2caef5f1624d5e28
-        size: 93813408
+        url: https://github.com/harborstremio-linux/harbor-linux-builds/releases/download/beta-v0.9.117/Harbor_0.9.117-3_amd64.deb
+        sha256: 445953a2795e46a71e12ca26f23a8fa1bf2c9edbbc891027b9e46cbb4bddefae
+        size: 91250274
       # END MANAGED EXTRA-DATA
       - type: file
         path: apply_extra.sh
