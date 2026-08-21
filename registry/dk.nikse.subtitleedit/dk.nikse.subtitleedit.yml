@@ -5,34 +5,50 @@ sdk: org.gnome.Sdk
 command: subtitleedit
 separate-locales: false
 build-options:
+  # no-debuginfo alone only suppresses the .Debug extension; it leaves the DWARF
+  # inside mpv-stack's copied libraries. ~10 MB of this ref was debug sections.
   no-debuginfo: true
+  strip: true
 finish-args:
+  # Display
   - --share=ipc
-  - --share=network
   - --socket=wayland
   - --socket=x11
-  - --socket=pulseaudio
+  # Hardware acceleration
   - --device=dri
-  - --filesystem=xdg-videos
-  - --filesystem=xdg-music
-  - --filesystem=xdg-documents
-  - --filesystem=xdg-download
+  # File access (subtitle files are typically in the home directory)
+  - --filesystem=home
+  # Mounted drives and network shares (NAS/SMB is a common place for video files).
+  # Direct access avoids the document portal, whose single-file grants strand files
+  # saved with an auto-appended extension as hidden ".xdp-*" temp files (issue #13308)
+  # and add FUSE overhead to video playback.
+  - --filesystem=/mnt
+  - --filesystem=/media
+  - --filesystem=/run/media
+  - --filesystem=xdg-run/gvfs
+  # Network (optional online services: translation, TTS, speech-to-text, etc.)
+  - --share=network
+  # Audio (video playback via mpv)
+  - --socket=pulseaudio
 modules:
+  # Subtitle Edit loads libmpv.so.2 via dlopen and never spawns the `mpv` CLI,
+  # so the 10 MB /app/bin/mpv the stack ships is dead weight for this app.
   - name: mpv-stack
     buildsystem: simple
     build-commands:
       - cp -a ./. /app/
+    cleanup:
+      - /bin/mpv
     sources:
       - type: archive
         url: https://github.com/flatpark/prebuilt/releases/download/mpv-v1/mpv-stack-mpv-v1-gnome-50-x86_64.tar.xz
         sha256: 900008f2263d53f72061e42f27775ab985510f496320aa366b2493662ec5a3be
 
-  - name: ffmpeg-tools
-    buildsystem: simple
-    build-commands:
-      - install -Dm755 /usr/bin/ffmpeg /app/bin/ffmpeg
-      - install -Dm755 /usr/bin/ffprobe /app/bin/ffprobe
-
+  # Built from source, after mpv-stack, so this 0.17.4 build - matching
+  # upstream's own pin exactly - is what actually ships: installing it here
+  # replaces the prebuilt stack's older 0.17.3 at the shared libass.so.9
+  # soname (ABI-compatible, so libmpv's already-linked binary keeps working
+  # against it). post-install drops the now-orphaned 0.17.3 file.
   - name: subtitleedit
     buildsystem: simple
     build-commands:
@@ -42,6 +58,101 @@ modules:
       - install -Dm644 dk.nikse.subtitleedit.metainfo.xml /app/share/metainfo/dk.nikse.subtitleedit.metainfo.xml
       - install -Dm644 dk.nikse.subtitleedit.png /app/share/icons/hicolor/256x256/apps/dk.nikse.subtitleedit.png
     sources:
+      # Everything this app needs beyond the runtime is a prebuilt stack from
+      # https://github.com/flatpark/prebuilt, fetched from its GitHub release at
+      # install time rather than built here — so none of it is committed into
+      # FlatPark's OSTree repository, which is a bucket the project pays for and
+      # which every publish has to sync in full. apply_extra unpacks each to its
+      # own /app/extra/<name>/ and the wrapper names them on LD_LIBRARY_PATH and
+      # PATH: directories the loader does not search by default, so none of this
+      # shadows what the runtime provides.
+      #
+      # ffmpeg is why most of them are here. The runtime's own ffmpeg is built
+      # without libass, so the `ass` and `subtitles` filters do not exist and
+      # burn-in fails at filter-graph parse time. ffmpeg-full links
+      # x264/x265/lame/rubberband/libass and ships none of them, which is why
+      # each is pinned separately: an app wanting only the encoder can take it,
+      # and a bump to one does not re-cut the others.
+      #
+      # Deliberately OUTSIDE the managed block below: update-pins.mjs rebuilds
+      # that block from the resolver's sources and would drop anything else in it.
+      - type: extra-data
+        filename: x264.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/x264-v1/x264-x264-v1-gnome-50-x86_64.tar.xz
+        sha256: f6d5ecf8620a60164d191aeb83ae9ba371e17fb0b3f217cce3d371f260c5f63f
+        size: 564664
+      - type: extra-data
+        filename: x265.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/x265-v1/x265-x265-v1-gnome-50-x86_64.tar.xz
+        sha256: 0e11378f93862669a832cfb58ae016d039aa65d2acbb8c64fc2a5a9db41a337e
+        size: 1051268
+      - type: extra-data
+        filename: lame.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/lame-v1/lame-lame-v1-gnome-50-x86_64.tar.xz
+        sha256: cf65e7f57f5532f692ed7107af0cafb36afb2277f31c7cb749da206f56f0b396
+        size: 143068
+      - type: extra-data
+        filename: rubberband.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/rubberband-v1/rubberband-rubberband-v1-gnome-50-x86_64.tar.xz
+        sha256: 8f88a7640b9eba33cba667d14f72b1261934e28fa6ba9dfbaa1396eac0c63f5f
+        size: 218688
+      - type: extra-data
+        filename: libass.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/libass-v1/libass-libass-v1-gnome-50-x86_64.tar.xz
+        sha256: 2b246bd7d9f658b0678e366c8196d40daf1088433daeab9a01b06c15884b375d
+        size: 114504
+      - type: extra-data
+        filename: ffmpeg-full.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/ffmpeg-full-v1/ffmpeg-full-ffmpeg-full-v1-gnome-50-x86_64.tar.xz
+        sha256: 220c5aa8b691ddec31fc4a7148fd33169a59012045cb1e5bf339ddc5f7b25465
+        size: 11446284
+      - type: extra-data
+        filename: leptonica.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/leptonica-v1/leptonica-leptonica-v1-gnome-50-x86_64.tar.xz
+        sha256: 150639275c0b5487d530289610a62f9626e9e74c51aa45cba865461937a7bead
+        size: 1155844
+      - type: extra-data
+        filename: tesseract.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/tesseract-v1/tesseract-tesseract-v1-gnome-50-x86_64.tar.xz
+        sha256: 5ee03744ac7bf1d688bcd6905da4c4fb788ce99caf0641bcc3ffe0499cc25ef8
+        size: 1627480
+      - type: extra-data
+        filename: uchardet.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/uchardet-v1/uchardet-uchardet-v1-gnome-50-x86_64.tar.xz
+        sha256: a6affdd2b5a451bc26afa067360c709fc9cfcbe6cf2955aec65f8936c59cded6
+        size: 70268
+      - type: extra-data
+        filename: sevenzip.tar.xz
+        only-arches:
+          - x86_64
+        url: https://github.com/flatpark/prebuilt/releases/download/sevenzip-v1/sevenzip-sevenzip-v1-gnome-50-x86_64.tar.xz
+        sha256: b7b7f202c528d0eb200fe609f143177d50dc646bd71309a13284a535b69185e9
+        size: 463620
+      - type: extra-data
+        filename: eng.traineddata
+        only-arches:
+          - x86_64
+        url: https://github.com/tesseract-ocr/tessdata/raw/4.1.0/eng.traineddata
+        sha256: daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047
+        size: 23466654
       # BEGIN MANAGED EXTRA-DATA
       - type: extra-data
         filename: subtitleedit.tar.gz
