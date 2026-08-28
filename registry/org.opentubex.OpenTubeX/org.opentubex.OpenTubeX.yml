@@ -23,6 +23,7 @@ finish-args:
   - --talk-name=org.freedesktop.PowerManagement
   - --talk-name=org.freedesktop.ScreenSaver
   - --talk-name=org.gnome.SessionManager
+  # Chromium's legacy GNOME media-key integration uses this service name.
   - --talk-name=org.gnome.SettingsDaemon
   - --unset-env=ELECTRON_RUN_AS_NODE
   # No host filesystem grant. Settings, profiles, subscriptions, playlists and
