@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.opentubex.OpenTubeX</id>
+  <name>OpenTubeX</name>
+  <summary>Privacy-focused desktop YouTube client</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <developer id="org.opentubex">
+    <name>OpenTubeX contributors</name>
+  </developer>
+  <url type="homepage">https://opentubex.org/</url>
+  <url type="bugtracker">https://github.com/OpenTubeX/OpenTubeX/issues</url>
+  <url type="vcs-browser">https://github.com/OpenTubeX/OpenTubeX</url>
+  <url type="translate">https://weblate.d3sox.me/engage/opentubex/</url>
+  <description>
+    <p>OpenTubeX is an open-source desktop YouTube client. It plays videos without advertisements and does not load Google's website, cookies or JavaScript.</p>
+    <p>Playback controls include per-channel speed and quality settings, SponsorBlock, silence skipping, tabs, multiple windows and a watch queue. Subscriptions, playlists, profiles, history and settings are stored locally, with optional end-to-end encrypted sync.</p>
+    <p>On first launch, OpenTubeX automatically downloads managed copies of yt-dlp from the official yt-dlp releases and FFmpeg and FFprobe from ffmpeg.martin-riedl.de. It stores and runs these tools inside the application's private data directory. They support yt-dlp playback and media downloads; the default built-in playback engine does not depend on them. Automatic tool updates can be changed in the External Software settings.</p>
+    <p>OpenTubeX is currently in beta. This package uses the official portable Linux build published by the OpenTubeX project.</p>
+  </description>
+  <launchable type="desktop-id">org.opentubex.OpenTubeX.desktop</launchable>
+  <provides>
+    <binary>opentubex</binary>
+  </provides>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Video</category>
+    <category>Network</category>
+  </categories>
+  <keywords>
+    <keyword>YouTube</keyword>
+    <keyword>video</keyword>
+    <keyword>player</keyword>
+    <keyword>privacy</keyword>
+    <keyword>subscriptions</keyword>
+  </keywords>
+  <screenshots>
+    <screenshot type="default">
+      <caption>The main OpenTubeX window</caption>
+      <image type="source" width="1882" height="1198">https://raw.githubusercontent.com/OpenTubeX/OpenTubeX/development/docs/screenshots/OpenTubeX1.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Watching a video</caption>
+      <image type="source" width="1882" height="1198">https://raw.githubusercontent.com/OpenTubeX/OpenTubeX/development/docs/screenshots/OpenTubeX2.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Settings</caption>
+      <image type="source" width="1882" height="1198">https://raw.githubusercontent.com/OpenTubeX/OpenTubeX/development/docs/screenshots/OpenTubeX3.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">moderate</content_attribute>
+    <content_attribute id="social-audio">moderate</content_attribute>
+    <content_attribute id="social-contacts">intense</content_attribute>
+  </content_rating>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <releases>
+    <release version="0.32.1-beta" date="2026-08-25">
+      <url>https://github.com/OpenTubeX/OpenTubeX/releases/tag/v0.32.1-beta</url>
+    </release>
+  </releases>
+</component>

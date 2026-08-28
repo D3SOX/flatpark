@@ -1,0 +1,84 @@
+id: org.opentubex.OpenTubeX
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: opentubex
+separate-locales: false
+build-options:
+  no-debuginfo: true
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # Chromium's Media Session integration owns a per-process MPRIS name. The
+  # fixed name is kept for compatibility with OpenTubeX's existing package.
+  - --own-name=org.mpris.MediaPlayer2.chromium.*
+  - --own-name=org.mpris.MediaPlayer2.opentubex
+  # Electron's powerSaveBlocker prevents display sleep while video is playing.
+  - --talk-name=org.freedesktop.PowerManagement
+  - --talk-name=org.freedesktop.ScreenSaver
+  - --talk-name=org.gnome.SessionManager
+  - --talk-name=org.gnome.SettingsDaemon
+  - --unset-env=ELECTRON_RUN_AS_NODE
+  # No host filesystem grant. Settings, profiles, subscriptions, playlists and
+  # history stay in the app's data directory. File and directory pickers use
+  # the desktop portal.
+modules:
+  # yt-dlp uses Deno for YouTube's JavaScript challenges. OpenTubeX can manage
+  # yt-dlp itself, while this module supplies the runtime it calls.
+  - name: deno
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 deno /app/bin/deno
+    sources:
+      - type: archive
+        only-arches:
+          - x86_64
+        url: https://github.com/denoland/deno/releases/download/v2.9.5/deno-x86_64-unknown-linux-gnu.zip
+        sha256: 8b010a3b1a4a0188a67cdb8a7a27348b2a501af78aec7fc74f2ace167368d530
+      - type: archive
+        only-arches:
+          - aarch64
+        url: https://github.com/denoland/deno/releases/download/v2.9.5/deno-aarch64-unknown-linux-gnu.zip
+        sha256: 6b7cae3a8fc4385a59dea3146fcb8bad7fea4230e0ad36a8c692afacbc254be0
+
+  - name: opentubex
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 opentubex-wrapper /app/bin/opentubex
+      - install -Dm644 org.opentubex.OpenTubeX.desktop /app/share/applications/org.opentubex.OpenTubeX.desktop
+      - install -Dm644 org.opentubex.OpenTubeX.metainfo.xml /app/share/metainfo/org.opentubex.OpenTubeX.metainfo.xml
+      - install -Dm644 org.opentubex.OpenTubeX.svg /app/share/icons/hicolor/scalable/apps/org.opentubex.OpenTubeX.svg
+    sources:
+      # BEGIN MANAGED EXTRA-DATA
+      - type: extra-data
+        filename: opentubex-x86_64.zip
+        only-arches:
+          - x86_64
+        url: https://github.com/OpenTubeX/OpenTubeX/releases/download/v0.32.1-beta/opentubex-0.32.1-beta-linux-x64-portable.zip
+        sha256: 7d3cdbc2adbc52f4994c536cc790ddf7dcc9c3c7d377a43348612c5d690f318b
+        size: 123601216
+      - type: extra-data
+        filename: opentubex-aarch64.zip
+        only-arches:
+          - aarch64
+        url: https://github.com/OpenTubeX/OpenTubeX/releases/download/v0.32.1-beta/opentubex-0.32.1-beta-linux-arm64-portable.zip
+        sha256: 7f6a07d14c57bae9f79e7223491f9cd15dd6ed6b881a0e3b8ccbe109f68a3b94
+        size: 121876092
+      # END MANAGED EXTRA-DATA
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: opentubex-wrapper
+      - type: file
+        path: org.opentubex.OpenTubeX.desktop
+      - type: file
+        path: org.opentubex.OpenTubeX.metainfo.xml
+      - type: file
+        path: org.opentubex.OpenTubeX.svg

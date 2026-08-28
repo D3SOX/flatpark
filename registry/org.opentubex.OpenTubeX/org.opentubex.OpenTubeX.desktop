@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=OpenTubeX
+GenericName=YouTube Client
+GenericName[de]=YouTube-Client
+Comment=A private YouTube client
+Comment[de]=Ein privater YouTube-Client
+Exec=opentubex %u
+Icon=org.opentubex.OpenTubeX
+Terminal=false
+StartupNotify=true
+StartupWMClass=opentubex
+Categories=AudioVideo;Video;
+MimeType=x-scheme-handler/opentubex;
+Keywords=YouTube;video;player;privacy;subscriptions;
+Keywords[de]=YouTube;Video;Player;Datenschutz;Abonnements;
