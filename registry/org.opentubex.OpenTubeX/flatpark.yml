@@ -1,0 +1,24 @@
+id: org.opentubex.OpenTubeX
+name: OpenTubeX
+summary: Privacy-focused desktop YouTube client
+website: https://opentubex.org/
+source_url: https://github.com/OpenTubeX/OpenTubeX
+build:
+  manifest: org.opentubex.OpenTubeX.yml
+  branch: stable
+  mode: extra-data
+catalog:
+  category: AudioVideo
+  upstream_approved: true
+  tags:
+    - YouTube
+    - Video
+    - Player
+    - Privacy
+    - Electron
+update:
+  command: ./resolve-update.sh
+policy:
+  proprietary: false
+  extra_data_first: true
+  dangerous_permissions: []
