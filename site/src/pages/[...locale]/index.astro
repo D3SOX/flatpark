@@ -75,7 +75,7 @@ const ordered = [...apps].sort((a, b) => (b.added || '').localeCompare(a.added |
         No top margin: the bar's own py-3 is the gap on both sides, so the
         controls sit centred between the rule above and the first card row.
       -->
-      <div data-grid class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+      <div data-grid class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 pt-0.5">
         {ordered.map((app) => <AppCard app={app} />)}
       </div>
       <!-- Folded to the first five rows until asked; see the fold in Base.astro. -->

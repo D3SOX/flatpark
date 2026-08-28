@@ -80,6 +80,9 @@ assert_contains "$index" "Test One"
 assert_contains "$index" "Test Two"
 assert_contains "$index" "Search apps"
 assert_contains "$index" "data-app-card"
+# The first row needs enough clearance to lift beneath the sticky controls.
+assert_contains "$index" "pt-0.5"
+assert_contains "$index" "hover:-translate-y-0.5"
 assert_contains "$index" "Finance"
 assert_contains "$index" "/apps/io.flatpark.TestOne/"
 
