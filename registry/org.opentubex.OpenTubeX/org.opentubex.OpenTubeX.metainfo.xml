@@ -15,7 +15,7 @@
   <description>
     <p>OpenTubeX is an open-source desktop YouTube client. It plays videos without advertisements and does not load Google's website, cookies or JavaScript.</p>
     <p>Playback controls include per-channel speed and quality settings, SponsorBlock, silence skipping, tabs, multiple windows and a watch queue. Subscriptions, playlists, profiles, history and settings are stored locally, with optional end-to-end encrypted sync.</p>
-    <p>On first launch, OpenTubeX automatically downloads managed copies of yt-dlp from the official yt-dlp releases and FFmpeg and FFprobe from ffmpeg.martin-riedl.de. It stores and runs these tools inside the application's private data directory. They support yt-dlp playback and media downloads; the default built-in playback engine does not depend on them. Automatic tool updates can be changed in the External Software settings.</p>
+    <p>On first launch, OpenTubeX automatically downloads a managed copy of yt-dlp from the official yt-dlp releases and stores it inside the application's private data directory. The Flatpak runtime provides FFmpeg and FFprobe, which OpenTubeX uses from the system path instead of downloading managed copies. These tools support yt-dlp playback and media downloads; the default built-in playback engine does not depend on them. Automatic tool updates can be changed in the External Software settings.</p>
     <p>OpenTubeX is currently in beta. This package uses the official portable Linux build published by the OpenTubeX project.</p>
   </description>
   <launchable type="desktop-id">org.opentubex.OpenTubeX.desktop</launchable>
