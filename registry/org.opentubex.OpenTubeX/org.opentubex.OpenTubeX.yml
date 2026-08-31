@@ -19,6 +19,7 @@ finish-args:
   # fixed name is kept for compatibility with OpenTubeX's existing package.
   - --own-name=org.mpris.MediaPlayer2.chromium.*
   - --own-name=org.mpris.MediaPlayer2.opentubex
+  - --own-name=org.mpris.MediaPlayer2.opentubex.*
   # Electron's powerSaveBlocker prevents display sleep while video is playing.
   - --talk-name=org.freedesktop.PowerManagement
   - --talk-name=org.freedesktop.ScreenSaver
